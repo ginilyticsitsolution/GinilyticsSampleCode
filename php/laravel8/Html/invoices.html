@@ -1,0 +1,286 @@
+@extends('layouts.app')
+@section('content')
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet">
+<style type="text/css">
+	.file-wrapper{
+		position: relative;
+	}
+
+	.file-wrapper .delete-btn {
+		display: block;
+		width: 24px;
+		height: 24px;
+		position: absolute;
+		border-radius: 30px;
+		font-size: 12px;
+		line-height: 24px;
+		top: -12px;
+		right: -12px;
+		transition: all .15s ease-in-out;
+	}
+	.custom-menu {
+		display: none;
+		z-index: 1000;
+		position: absolute;
+		overflow: hidden;
+		border: 1px solid #CCC;
+		white-space: nowrap;
+		font-family: sans-serif;
+		background: #FFF;
+		color: #333;
+		border-radius: 5px;
+	}
+
+	.custom-menu li {
+		padding: 8px 12px;
+		cursor: pointer;
+		list-style-type: none;
+	}
+
+	.custom-menu li:hover {
+		background-color: #DEF;
+	}
+
+	/* CSS FOR SELECT2 V-4.0 */
+	.select2-container .select2-selection {
+		width: 100%;
+		height: 35px;
+		padding: 3px 12px;
+		font-weight: 400;
+		line-height: 1.5;
+		color: #33334F;
+		background-color: #fff;
+		background-clip: padding-box;
+		border: 1px solid #E0E8F1;
+		transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+		font-size: 14px;
+		border-radius: 5px;
+	}
+
+	.select2-container .select2-selection--single .select2-selection__rendered {
+		padding-left: 0;
+	}
+
+	.select2-container.select2-container--open {
+		width: auto;
+	}
+
+	.select2-container.select2-container--open .select2-dropdown{
+		background: #FFFFFF;
+		border: 1px solid #D3D8DE;
+		box-sizing: border-box;
+		box-shadow: 0px 6.02273px 15.6591px rgb(112 112 132 / 15%);
+		border-radius: 7px;
+		margin-top: 5px;
+		padding: 13px 9px;
+	}
+
+	.select2-container--default .select2-results__option[aria-selected=true] {
+		background-color: #1C3E95;
+		color: #fff;
+	}
+
+	.select2-container--default .select2-results__option--highlighted[aria-selected] {
+		color: #1C3E95;
+		font-weight: 700;
+		background-color: #fff;
+	}
+
+</style>
+<link rel="stylesheet" href="{{asset('css/lightbox.css')}}"/>
+
+<div class="card">
+	<div class="card-body">
+		<div class="facility-profile section-header mobile-icon">
+			<div class="row">
+				<div class="col-12 input-group-prepend mr-0">
+					<select class="" name="facility_id" style="width:100%" id="facility_id">
+						<?php $selectedFacility = null; ?>
+						@foreach($facilities as $facility)
+						<?php 
+							if($facility->id == $facilityId){
+								$selectedFacility = $facility;
+							} 
+						?>
+						@if($facility->id == $facilityId)
+						<option value="{{$facility->id}}" selected>{{$facility->name}} - {{$facility->address}}, {{$facility->city}}, {{$facility->postal_code}} {{$facility->zipcode}}</option> 
+						@else
+						<option value="{{$facility->id}}">{{$facility->name}} - {{$facility->address}}, {{$facility->city}}, {{$facility->postal_code}} {{$facility->zipcode}}</option> 
+						@endif
+						@endforeach
+					</select>
+				</div>
+			</div>
+
+			@if(!$facilities->isEmpty())
+			<div class="row">
+				<div class="col-12 header-search-result">
+					<label id="fact_name">{{$selectedFacility ? $selectedFacility->name : ''}}</label>
+					<address class="mb-0">
+						<span id="fact_address">{{$selectedFacility ? $selectedFacility->address  : ''}}</span><br>
+						<span id="fact_city">{{$selectedFacility ? $selectedFacility->city . ', ' : ''}}</span>
+						<span id="fact_postal_code">{{$selectedFacility ? $selectedFacility->postal_code : ''}}</span>
+						<span id="fact_zipcode">{{$selectedFacility ? $selectedFacility->zipcode: ''}}</span><br>
+						@if($selectedFacility->corporation_name)
+						<span id="fact_corporation">{{$selectedFacility ? $selectedFacility->corporation_name: ''}}</span><br>
+						@endif
+						<span id="">{{$selectedFacility ? $selectedFacility->phone: ''}}</span>
+					</address>
+				</div> 
+			</div>
+		</div>
+	</div>
+</div>
+@endif
+
+<div class="card">
+	<div class="d-flex justify-content-between align-items-center padding30 pb-0">
+		<h5 class="mb-0">Invoices</h5>
+		<div class="d-flex align-item-center">
+			<div class="w-100">
+				<select class="form-control" name="invoiceYear" id="invoiceYear" style="width: 90px;">
+					@foreach($yearsInDropdown as $index => $year)
+					@if($year == $selectedYear)
+					<option value="{{$year}}" selected>{{$year}}</option>
+					@else
+					<option value="{{$year}}">{{$year}}</option>
+					@endif
+					@endforeach
+				</select>
+			</div>
+		</div>
+	</div>
+
+	@foreach($monthsArrayToShow as $index => $month)
+	<div class="card-body d-flex flex-column">
+		<div class="card card-child">
+			<div class="dropdown dropdown-btn">
+				<div class="btn dropdown-toggle" href="javascript:void(0);" role="button" id="dropdownMenuButton1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<i class="fas fa-ellipsis-v"></i>
+				</div>
+				<ul class="dropdown-menu" style="min-width: 0px;" aria-labelledby="dropdownMenuButton1">
+					@can('invoice-create')
+					<li class="invoiceUploadList">
+						<input type="hidden" name="month_sequence" value="{{$month->sequence_no}}">
+						<input type="file" name="invoicesAttachments_{{$month->sequence_no}}" id="invoicesAttachments_{{$month->sequence_no}}" multiple class="d-none invoicesAttachments" accept=".xls,.xlsx,.jpg,.jpeg,.png,.bmp,.pdf,.doc,.docx,.txt" />
+						<span for="invoicesAttachments_{{$month->sequence_no}}" href="" class="dropdown-item invoiceUpload">Upload</span>
+					</li>
+					@endcan
+					@can('invoice-download-all')
+					<li class="invoicesDownload">
+						@if(isset($invoicesAndAttachments->toArray()[$month->sequence_no]) && !empty($invoicesAndAttachments->toArray()[$month->sequence_no]))	
+						<span data-filedownloadlink="{{route('invoices.download_as_zip_by_month', ['facility_id' => $facilityId, 'year' => $selectedYear, 'month' => $month->sequence_no])}}" class="dropdown-item">Download All</span>
+						@else
+						<span data-filedownloadlink="#" class="dropdown-item" disabled=true>Download All</span>
+						@endif
+					</li>
+					@endcan
+				</ul>
+			</div>
+			<div class="row">
+				<div class="col-1">
+					<h3 class="mb-0 d-flex align-items-center month-title">
+						<span class="">{{$month->abbr}} {{$selectedYear}}</span>
+					</h3>
+				</div>
+				<div class="col-11 d-flex position-relative flex-wrap">
+					@if(isset($invoicesAndAttachments->toArray()[$month->sequence_no]))
+					@foreach($invoicesAndAttachments->toArray()[$month->sequence_no] as $invoicesAndAttachment)
+					<div class="file-wrapper mx-3 viewFileInNewTab" id="attachment_{{$invoicesAndAttachment['id']}}">
+						<a href="javascript:;" style="z-index:1;" class="delete-btn alert-danger fas fa-times text-decoration-none d-none"></a>
+						@if(in_array(strtolower($invoicesAndAttachment['file_extension']), ['jpg','jpeg', 'png', 'gif', 'tiff', 'psd', 'pdf']))
+						@if(in_array(strtolower($invoicesAndAttachment['file_extension']), ['jpg','jpeg', 'png', 'gif', 'tiff']))
+						<div class="file-image viewFileInNewTab" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}">
+							<a href="{{asset($invoicesAndAttachment['attachment_view_path'])}}" data-lightbox="example-1.jpg">
+								<img class="img-fluid" data-name="{{$invoicesAndAttachment['name']}}" data-id="{{$invoicesAndAttachment['id']}}" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}" style="height: 102px;" src="{{asset($invoicesAndAttachment['attachment_view_path'])}}" alt="{{$invoicesAndAttachment['name']}}">
+							</a>
+						</div>
+						@elseif(strtolower(in_array(strtolower($invoicesAndAttachment['file_extension']), ['pdf', 'psd'])))
+						<div class="file-image viewFileInNewTab" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}">
+							<img class="img-fluid" data-name="{{$invoicesAndAttachment['name']}}" data-id="{{$invoicesAndAttachment['id']}}" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}" style="height: 102px;" src="{{asset('/img/icon/pdf.png')}}" alt="{{$invoicesAndAttachment['name']}}">
+						</div>
+						@endif
+						@elseif(strtolower(in_array(strtolower($invoicesAndAttachment['file_extension']), ['xlsx','xls'])))
+						<div class="file-image viewFileInNewTab" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}">
+							<img class="img-fluid" data-name="{{$invoicesAndAttachment['name']}}" data-id="{{$invoicesAndAttachment['id']}}" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}" style="height: 102px;" src="{{asset('/img/icon/excel.png')}}" alt="{{$invoicesAndAttachment['name']}}">
+						</div>
+						@elseif(strtolower(in_array(strtolower($invoicesAndAttachment['file_extension']), ['txt','sql'])))
+						<div class="file-image viewFileInNewTab" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}">
+							<img class="img-fluid" data-name="{{$invoicesAndAttachment['name']}}" data-id="{{$invoicesAndAttachment['id']}}" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}" style="height: 102px;" src="{{asset('/img/icon/txt.png')}}" alt="{{$invoicesAndAttachment['name']}}">
+						</div>
+						@elseif(strtolower(in_array(strtolower($invoicesAndAttachment['file_extension']), ['docx','doc'])))
+						<div class="file-image viewFileInNewTab" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}">
+							<img class="img-fluid" data-name="{{$invoicesAndAttachment['name']}}" data-id="{{$invoicesAndAttachment['id']}}" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}" style="height: 102px;" src="{{asset('/img/icon/word.png')}}" alt="{{$invoicesAndAttachment['name']}}">
+						</div>
+						@else
+						<div class="file-image viewFileInNewTab" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}">
+							<img class="img-fluid" data-name="{{$invoicesAndAttachment['name']}}" data-id="{{$invoicesAndAttachment['id']}}" data-href="{{asset($invoicesAndAttachment['attachment_view_path'])}}" style="height: 102px;" src="{{asset('/img/icon/file-default.png')}}" alt="{{$invoicesAndAttachment['name']}}">
+						</div>
+						@endif
+
+						<div class="file-title">
+							<h6 class="mb-0">
+								<a href="{{$invoicesAndAttachment['attachment_view_path']}}" class="d-block" target="_blank">
+									{{$invoicesAndAttachment['name']}}
+								</a>
+							</h6> 
+						</div>
+					</div>
+					@endforeach
+					@endif
+				</div>
+			</div>
+		</div>
+	</div>
+	@endforeach
+</div>
+
+<button type="button" class="btn btn-primary d-none" id="renameAttachmentButton" data-toggle="modal" data-target="#renameAttachment"></button>
+<div class="modal fade" id="renameAttachment" tabindex="-1" role="dialog" aria-labelledby="renameAttachmentLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="renameAttachmentLabel">Rename Document</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-3">
+						<label for="attachmentName" class="col-form-label font-size20 text-black">Document Name</label>
+					</div>
+					<div class="col-md-9">
+						<input type="text" class="form-control" id="attachmentName">
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" id="updateAttchmentNameButton">Save</button>
+				<button type="button" class="btn btn-link ml-3" data-dismiss="modal">Cancel</button>
+			</div>
+		</div>
+	</div>
+</div>
+<style type="text/css">
+	.search-input-box-frame .select2-container .select2-choice {
+		color: #3654FF;
+		border-color: #3654FF;
+		border-radius: 0;
+	}
+
+	.select2{
+		width: 100%;
+	}
+</style>
+@endsection
+
+@section('script')
+<script src="{{asset('js/lightbox.min.js')}}"></script>
+<script src="{{asset('js/axios.min.js')}}"></script>
+
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script>
+@endsection
