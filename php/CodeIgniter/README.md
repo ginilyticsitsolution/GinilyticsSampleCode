@@ -1,2 +1,2 @@
-# CI_Test
-CI test application
+# CI_Sample Code
+CI Sample application
