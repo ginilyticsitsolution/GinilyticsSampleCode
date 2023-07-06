@@ -1,0 +1,887 @@
+﻿@using BriefLynxNew.Models
+@using Newtonsoft.Json
+@using Kendo.Mvc.UI
+@model BriefLynxNew.Models.BriefViewModel
+@*<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">*@
+
+@section Scripts
+    {
+    @Scripts.Render("~/Scripts/BriefLynx.FileUpload.js")
+    @Scripts.Render("~/Scripts/BriefLynx.Brief.js")
+    @Scripts.Render("~/Scripts/BriefLynx.ShareFile.js")
+    <script src="~/Scripts/ajax/jquery.unobtrusive-ajax.js"></script>
+
+}
+<style>
+    .btn-info-color .k-upload-button {
+        color: #fff;
+        background-color: #FF5A60;
+        border-color: #FF5A60;
+        background-image: none;
+        transition: all 0.3s;
+        box-shadow: none
+    }
+
+        .btn-info-color .k-upload-button:hover {
+            color: #fff;
+            background-color: #113147;
+            border-color: #113147;
+        }
+
+    #brief-document-grid .k-grid-View {
+        background-color: #FF5A60 !important;
+        border-color: #FF5A60 !important;
+        color: #fff !important;
+        transition: all 0.3s;
+    }
+
+        #brief-document-grid .k-grid-View:hover {
+            color: #fff !important;
+            background-color: #113147 !important;
+            border-color: #113147 !important;
+        }
+</style>
+<script type="text/javascript">
+
+
+    function showDetails(e) {
+
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var Url = "/BriefDocument/getdocumentviewerurl?id=" + dataItem.DocumentId;
+        window.open(Url, "_blank");
+    }
+</script>
+
+
+<div id="brief-detail-container" class="main-content">
+
+    @Html.Partial("_BriefEditNew")
+
+
+    <div class="row add-matters mb-30">
+        <div class="col-12">
+            <div class="card exhibit-table-grid">
+                <div class="d-flex align-items-center justify-content-between mb-30">
+                    <h2 class="card-title mb-0">Exhibit</h2>
+                    <div>
+                        <a href="javscript:;" id="btndelete" data-bind="click: onDeleteUnlinkedDocuments, enable: isDeleteUnlinkedDocumentsEnabled" class="text-decoration f-14 btn btn-outline-secondary custom-padding link-button">Delete Unlinked Exhibits</a>
+
+                        @if (Model.CurrentUserIsBriefOwnerOrAdmin)
+                        {
+                            @*<a href="javscript:;" id="btnShareBrief" class="text-decoration f-14 btn btn-primary ms-3 custom-padding">Brief Settings</a>*@
+                            <button id="btnShareBrief" type="button"
+                                    class="text-decoration f-14 btn btn-primary ms-3 custom-padding"
+                                    data-bind="click: onPopupButtonClick"
+                                    data-popuplinkbutton-destination="@Url.Action("SettingsPopup", "Brief", new { id = Model.BriefId })"
+                                    data-popuplinkbutton-height="379"
+                                    data-popuplinkbutton-width="932"
+                                    data-popuplinkbutton-title="Brief Settings">
+                                Brief Settings
+                            </button>
+
+
+                        }
+                    </div>
+                </div>
+
+
+
+
+
+                <!--<div class="row">
+                <div class="col-xl-12 briefInfo exhibits">-->
+                @*<h4>Exhibits</h4>*@
+
+                <div class="brief-btn-section">
+
+                    @*<button id="btndelete" class="link-button" data-bind="click: onDeleteUnlinkedDocuments, enable: isDeleteUnlinkedDocumentsEnabled">Delete Unlinked Exhibits</button>*@
+                    @if (Model.CurrentUserIsBriefOwnerOrAdmin)
+                    {
+                        @*<button id="btnShareBrief" type="button"
+                                    data-bind="click: onPopupButtonClick"
+                                    data-popuplinkbutton-destination="@Url.Action("SettingsPopup", "Brief", new { id = Model.BriefId })"
+                                    data-popuplinkbutton-height="540"
+                                    data-popuplinkbutton-width="800"
+                                    data-popuplinkbutton-title="Brief Settings" class="link-button settings">
+                                Brief Settings
+                            </button>*@
+                    }
+                </div>
+                @*<a class="k-button k-button-icontext k-grid-Delete Unlinked Exhibits" data-bind="click: onDeleteUnlinkedDocuments, enable: isDeleteUnlinkedDocumentsEnabled" href="/Brief/2/BriefDetailPopup" style="width: 180px;"><span></span>Delete Unlinked Exhibits</a>*@
+
+                <ul id="briefgridListbar">
+                    <li id="divbrieflist">
+                </ul>
+                <div>
+                    @(Html.Kendo().Grid<BriefDocumentViewModel>().Name("brief-document-grid")
+                          .Columns(columns =>
+                          {
+                              columns.Bound(dataSet => dataSet.FileName).Title("File Name");
+                              columns.Bound(dataSet => dataSet.Format).ClientTemplate("<span>#:FormatDisplay#</span>").Title("Format").Width(100);
+                              columns.Bound(dataSet => dataSet.UploadStatus).ClientTemplate("<span>#:UploadStatusDisplay#</span>").Title("Upload Status").Width(150);
+                              columns.Bound(dataSet => dataSet.IsLinkedTo).ClientTemplate("<span>#:IsLinkedToDisplay#</span>").Title("Linked Status").Width(150);
+                              columns.Command(command => command.Custom("View").Click("showDetails")).Width(80);
+                              columns.Command(command => command.Destroy().Text(" ").HtmlAttributes(new { title = "Delete" })).Width(100).HtmlAttributes(new { style = "text-align: center !important;" }).Width(50);
+                          })
+
+                          //.ToolBar(toolbar => toolbar.Custom().Name("Delete Unlinked Exhibits").HtmlAttributes(new { data_bind = "click: onDeleteUnlinkedDocuments, enable: isDeleteUnlinkedDocumentsEnabled", style = "width: 180px;" }))
+                          .Pageable()
+                          .Sortable(sorting => sorting.SortMode(GridSortMode.MultipleColumn))
+                          .Sortable(sorting => sorting.SortMode(GridSortMode.MultipleColumn))
+                          .Filterable(filtering => filtering.Enabled(true).Extra(false))
+                          .Editable(editable => editable.Mode(GridEditMode.InLine).DisplayDeleteConfirmation("Click OK to delete this document."))
+                          .Events(events => events.DataBound("BriefLynx.GridHelper.hidePagerIfNotNeeded"))
+                          .DataSource(
+                              dataSource =>
+                              dataSource
+                                  .Ajax()
+                                  .Batch(false)
+                                  .PageSize(10)
+                                  .Read("Documents", "Brief", new { id = Model.BriefId })
+                                  .Destroy("DeleteDocument", "Brief", new { id = Model.BriefId })
+                                  .Events(eventConfig => eventConfig.Error("BriefLynx.Ajax.onError"))
+                                  .Model(model =>
+                                  {
+                                      model.Id(p => p.DocumentId);
+                                      model.Field(p => p.FileName).Editable(false);
+                                  })
+                          ))
+                </div>
+                @*</li>
+                    </ul>*@
+                @if (Model.IsShared)
+                {
+                    <div class="sharesGridDiv">
+                        <h4>Your Shares</h4>
+                        @Html.Partial("_MyShares", Model)
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="col-xl-12">
+
+        <div style="margin-top: 30px;">
+            @(Html.Kendo().TabStrip()
+					  .Name("file-upload-tabstrip")
+					  .Items(items =>
+					  {
+
+
+					  }))
+
+        </div>
+
+
+
+
+
+
+
+        @*<div class="flt-right brief-buttons brift-button-margin-zero">
+
+            @if (Model.BriefDocumentId.HasValue)
+            {
+                <button id="btnRunMacro" type="button" class="primary-button" data-bind="click: onRunMacroClick">Run Macro(s)</button>
+                <button id="btnCreateLinks" type="button" class="primary-button" data-bind="click: onCreateLinks">PDF Editor</button>*@
+        @*<button id="btnCreateLinks" type="button" class="primary-button" data-bind="click: onPDFViewjsClick">PDF Viewer</button>*@
+        @*<button id="btnCreateLinksByHtml" type="button" class="secondary-button" data-bind="click: onCreateLinksByHtml">Create Links</button>*@
+        @*<button type="button" class="secondary-button"
+                    data-bind="click: onLinkButtonClick"
+                    data-linkbutton-destination="@Url.Action("LinkReport", "Brief", new { id = Model.BriefId })">
+                Download Link Report
+            </button>*@
+        @*<button type="button" class="primary-button"
+                    data-bind="click: onLinkButtonClick"
+                    data-linkbutton-destination="@Url.Action("Package", "Brief", new { id = Model.BriefId })">
+                Package
+            </button>*@
+        @*<button type="button" class="primary-button"
+                    data-bind="click: onPopupButtonClick"
+                    data-popuplinkbutton-destination="@Url.Action("PackagePopup", "Brief", new { id = Model.BriefId })"
+                    data-popuplinkbutton-height="380"
+                    data-popuplinkbutton-width="900"
+                    data-popuplinkbutton-title="Brief Package">
+                Package
+            </button>*@
+        @*<button id="btnShareHtmlLink" type="button" class="secondary-button" data-bind="click: onShareHtmlLink">Share HTML Link</button>*@
+        @*<button type="button" class="secondary-button"
+                    data-bind="click: onMecroButtonClick"
+                    data-linkbutton="@Url.Action("Mecro", "Brief", new { id = Model.BriefId })">
+                Add Macro
+            </button>*@
+        <!--<button type="button" class="primary-button"
+                    data-bind="click: onPopupButtonClick"
+                    data-popuplinkbutton-destination="@Url.Action("MecroPopup", "Brief", new { id = Model.BriefId })"
+                    data-popuplinkbutton-height="400"
+                    data-popuplinkbutton-width="900"
+                    data-popuplinkbutton-title="Brief Macro">
+                Add Macro
+            </button>
+        }
+        else
+        {-->
+        @*<button type="button" class="secondary-button"
+                    data-linkbutton-destination="@Url.Action("Upload", "BriefDocument", new { id = Model.BriefId })"
+                    data-bind="click: onLinkButtonClick">
+                Add Brief Document
+            </button>*@
+
+        @*<button type="button" class="secondary-button"
+                    data-bind="click: onPopupButtonClick"
+                    data-popuplinkbutton-destination="@Url.Action("UploadPopup", "BriefDocument", new { id = Model.BriefId })"
+                    data-popuplinkbutton-height="400" tton-height="270"
+                    data-popuplinkbutton-width="800"
+                    data-popuplinkbutton-title="Brief Document Upload">
+                Add Brief Document
+            </button>*@
+        @*}*@
+        @*</div>
+                </div>
+            </div>*@
+
+
+
+    </div>
+
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="exhibit-upload-tab" data-bs-toggle="tab" data-bs-target="#exhibit-upload" type="button" role="tab" aria-controls="exhibit-upload" aria-selected="true">Exhibit Upload</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="placeholder-tab" data-bs-toggle="tab" data-bs-target="#placeholder" type="button" role="tab" aria-controls="placeholder" aria-selected="false">Placeholder File</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="share-tab" data-bs-toggle="tab" data-bs-target="#share-file" type="button" role="tab" aria-controls="share-file" aria-selected="false">Share File</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <!-- Exhibit -->
+                    <div class="tab-pane pt-4 fade show active" id="exhibit-upload" role="tabpanel" aria-labelledby="exhibit-upload-tab">
+                        <div class="browse-box d-flex flex-column justify-content-center">
+                            @using (Html.BeginForm("Index", "Brief", FormMethod.Post))
+                            {
+                                <div class="btn-info-color">
+                                    <input name="files"
+                                           type="file"
+                                           accept="@string.Format("{0},application/zip", Model.AllowedBriefAttachmentFileMimetypeList)"
+                                           data-bind="kendoUpload: {
+                                                                    multiple: false,
+																	files: attachmentUpload.files,
+																	async:
+																	{
+                                                                        saveUrl: '@Url.Action("AttachmentUpload", "Brief")',
+																		autoUpload: false,
+																		batch: true
+                                                                    },
+																	enabled: attachmentUpload.uploadEnabled,
+																	select: attachmentUpload.onSelect,
+																	upload: attachmentUpload.onUpload,
+																	success: attachmentUpload.onSuccess,
+																	error: attachmentUpload.onError
+                                                                }" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Placeholder -->
+                    <div class="tab-pane pt-4 fade" id="placeholder" role="tabpanel" aria-labelledby="placeholder-tab">
+                        <div class="browse-box d-flex flex-column justify-content-center">
+                            @using (Html.BeginForm("Index", "Brief", FormMethod.Post))
+                            {
+                                <div>
+                                    <input name="files"
+                                           type="file"
+                                           accept="@Model.AllowedBriefPlaceholderFileMimetypeList"
+                                           data-bind="kendoUpload: {
+																	multiple: false,
+																	async:
+																	{
+                                                                        saveUrl: '@Url.Action("AttachmentUpload", "Brief")',
+                                                                        autoUpload: false,
+																		batch: true },
+																		enabled: placeholderUpload.uploadEnabled,
+																		select: placeholderUpload.onSelect,
+																		upload: placeholderUpload.onUpload },
+                                                                        localization: {
+                                                                        uploadSelectedFiles: 'Add Placeholder'
+                                                                    }" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Share File -->
+                    <div class="tab-pane pt-4 fade" id="share-file" role="tabpanel" aria-labelledby="share-tab">
+                        <div class="row">
+                            @Html.Partial("_ShareFileUpload", Model.ShareFile)
+
+                        </div>
+                    </div>
+                </div>
+                <div class="flt-left">
+                    @if (ViewBag.StatusMessage != null)
+                    {
+                        <div id="status" class="statusok">
+                            @ViewBag.StatusMessage
+                        </div>
+                    }
+                </div>
+
+                <div class="row border-top pt-3 mt-4">
+                    <div class="col-12 col-md-3">
+                        <a onclick="location.href='@Url.Action("ChangeName", "Matter")';return false;" class="btn btn-outline-secondary f-14 custom-padding min-width90 mb-2 mb-md-0 d-block d-md-inline-block">Cancel</a>
+                        @*<a onclick="location.href='@Url.Action("ChangeName", "Matter")';return false;" class="btn btn-outline-secondary f-14 custom-padding min-width90 mb-2 mb-md-0 d-block d-md-inline-block">Cancel</a>*@
+                    </div>
+                    @*__________________________________________________________________________________________________________________*@
+
+
+
+
+                    <div class="col-12 col-md-9 d-md-flex justify-content-md-end">
+
+                        @if (Model.BriefDocumentId.HasValue)
+                        {
+                            @*<button id="btnRunMacro, Model.BriefId " class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block" data-bind="click: onRunMacroClick">Run Macro(s)</button>*@
+
+
+
+                            <button href="javascript:;" id="BriefModalModel.BriefId " class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block" data-bind="click: onRunMacroClick">Run Macro(s)</button>
+
+                            @*<button id="btnCreateLinks" type="button" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-bloc" data-bind="click: onCreateLinks">PDF Editor</button>*@
+                            <button id="btnCreateLinks" type="button" formtarget="_blank" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block" data-bind="click: onCreateLinks">PDF Editor</button>
+                            @*<button type="button" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-blocn"
+                                        data-bs-toggle="modal" data-bs-target="#exampleModal"
+                                        data-bind="click: onLinkButtonClick "
+                                        data-linkbutton-destination="@Url.Action("Package", "Brief", new { id = Model.BriefId })">
+                                    Package
+                                </button>*@
+                            <button type="button" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-blocn"
+                                    data-bind="click: onPopupButtonClick"
+                                    data-popuplinkbutton-destination="@Url.Action("PackagePopup", "Brief", new { id = Model.BriefId })"
+                                    data-popuplinkbutton-height="545"
+                                    data-popuplinkbutton-width="628"
+                                    data-popuplinkbutton-title="Brief Package">
+                                Package
+                            </button>
+
+
+                            //kendoTooltip: { content: 'Navigate to the Brief Package Page', position: 'top' }
+                            @*<button type="button" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block"
+                                        data-bind="click: onPopupButtonClick"
+                                        data-popuplinkbutton-destination="@Url.Action("MecroPopup", "Brief", new { id = Model.BriefId })"
+                                        data-popuplinkbutton-height="400"
+                                        data-popuplinkbutton-width="900"
+                                        data-popuplinkbutton-title="Brief Macro">
+                                    Add Macro
+                                </button>*@
+                            @*<button id="btnShareHtmlLink" type="button" class="secondary-button" data-bind="click: onShareHtmlLink">Share HTML Link</button>*@
+                            <button type="button" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block"
+                                    data-bind="click: onPopupButtonClick"
+                                    data-popuplinkbutton-destination="@Url.Action("MecroPopup", "Brief", new { id = Model.BriefId })"
+                                    data-popuplinkbutton-height="400"
+                                    data-popuplinkbutton-width="900"
+                                    data-popuplinkbutton-title="Brief Macro">
+                                Add Macro
+                            </button>
+
+
+                        }
+                        else
+                        {
+                            <button type="button" class="f-14 btn btn-primary ms-3 custom-padding"
+                                    data-linkbutton-destination="@Url.Action("Upload", "BriefDocument", new { id = Model.BriefId })"
+                                    data-bind="click: onLinkButtonClick">
+                                Add Brief Document
+                            </button>
+
+
+                            @*<button type="button" class="secondary-button"
+                                        data-bind="click: onPopupButtonClick"
+                                        data-popuplinkbutton-destination="@Url.Action("UploadPopup", "BriefDocument", new { id = Model.BriefId })"
+                                        data-popuplinkbutton-height="400" tton-height="270"
+                                        data-popuplinkbutton-width="800"
+                                        data-popuplinkbutton-title="Brief Document Upload">
+                                    Add Brief Document
+                                </button>*@
+                        }
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+@*________________________________________________________________________________________________________________________*@
+
+
+@*<div class="col-12 col-md-9 d-md-flex justify-content-md-end">
+
+    @if (Model.BriefDocumentId.HasValue)
+    {
+        <button id="btnRunMacro" type="button" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block" data-bind="click: onRunMacroClick">Run Macro(s)</button>
+        <button id="btnCreateLinks" type="button" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-bloc" data-bind="click: onCreateLinks">PDF Editor</button>*@
+@*<button id="btnCreateLinks" type="button" class="primary-button" data-bind="click: onPDFViewjsClick">PDF Viewer</button>*@
+@*<button id="btnCreateLinksByHtml" type="button" class="secondary-button" data-bind="click: onCreateLinksByHtml">Create Links</button>*@
+@*<button type="button" class="secondary-button"
+            data-bind="click: onLinkButtonClick"
+            data-linkbutton-destination="@Url.Action("LinkReport", "Brief", new { id = Model.BriefId })">
+        Download Link Report
+    </button>*@
+
+
+@*<button type="button" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-blocn"
+            data-bs-toggle="modal" data-bs-target="#exampleModal"
+            data-bind="click: onLinkButtonClick"
+            data-linkbutton-destination="@Url.Action("Package", "Brief", new { id = Model.BriefId })">
+        Package
+    </button>*@
+
+
+@*<button type="button" class="primary-button"
+            data-bind="click: onPopupButtonClick"
+            data-popuplinkbutton-destination="@Url.Action("PackagePopup", "Brief", new { id = Model.BriefId })"
+            data-popuplinkbutton-height="380"
+            data-popuplinkbutton-width="900"
+            data-popuplinkbutton-title="Brief Package">
+        Package
+    </button>*@
+@*<button id="btnShareHtmlLink" type="button" class="secondary-button" data-bind="click: onShareHtmlLink">Share HTML Link</button>
+    <button type="button" class="secondary-button"
+            data-bind="click: onMecroButtonClick"
+            data-linkbutton="@Url.Action("Mecro", "Brief", new { id = Model.BriefId })">
+        Add Macro
+    </button>*@
+
+
+@*<button type="button" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block"
+                data-bind="click: onPopupButtonClick"
+                data-popuplinkbutton-destination="@Url.Action("MecroPopup", "Brief", new { id = Model.BriefId })"
+                data-popuplinkbutton-height="400"
+                data-popuplinkbutton-width="900"
+                data-popuplinkbutton-title="Brief Macro">
+            Add Macro
+        </button>
+    }
+    else
+    {
+        @*<button type="button" class="secondary-button"
+                data-linkbutton-destination="@Url.Action("Upload", "BriefDocument", new { id = Model.BriefId })"
+                data-bind="click: onLinkButtonClick">
+            Add Brief Document
+        </button>*@
+
+@*<button type="button" class="secondary-button"
+            data-bind="click: onPopupButtonClick"
+            data-popuplinkbutton-destination="@Url.Action("UploadPopup", "BriefDocument", new { id = Model.BriefId })"
+            data-popuplinkbutton-height="400" tton-height="270"
+            data-popuplinkbutton-width="800"
+            data-popuplinkbutton-title="Brief Document Upload">
+        Add Brief Document
+    </button>*@
+@*}
+            </div>
+        </div>
+    </div>*@
+
+
+
+@*________________________________________________________________*@
+
+@*new exbhit upload*@
+@*<div*@
+<!--class="row">
+<div class="col-12">
+    <div class="card">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="exhibit-upload-tab" data-bs-toggle="tab" data-bs-target="#exhibit-upload" type="button" role="tab" aria-controls="exhibit-upload" aria-selected="true">Exhibit Upload</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="placeholder-tab" data-bs-toggle="tab" data-bs-target="#placeholder" type="button" role="tab" aria-controls="placeholder" aria-selected="false">Placeholder File</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="share-tab" data-bs-toggle="tab" data-bs-target="#share-file" type="button" role="tab" aria-controls="share-file" aria-selected="false">Share File</button>
+            </li>
+        </ul>
+
+
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Exhibit
+<!--<div class="tab-pane pt-4 fade show active" id="exhibit-upload" role="tabpanel" aria-labelledby="exhibit-upload-tab">
+<div class="browse-box d-flex flex-column align-items-center justify-content-center">
+    <div>
+        @using (Html.BeginForm("Index", "Brief", FormMethod.Post))
+        {
+            <div>
+                <input name="files"
+                       type="file"
+                       accept="@string.Format("{0},application/zip", Model.AllowedBriefAttachmentFileMimetypeList)"
+                       data-bind="kendoUpload: {
+                                            multiple: false,
+                                            files: attachmentUpload.files,
+                                            async:
+                                            {
+                                                saveUrl: '@Url.Action("AttachmentUpload", "Brief")',
+                                                autoUpload: false,
+                                                batch: true
+                                            },
+                                            enabled: attachmentUpload.uploadEnabled,
+                                            select: attachmentUpload.onSelect,
+                                            upload: attachmentUpload.onUpload,
+                                            success: attachmentUpload.onSuccess,
+                                            error: attachmentUpload.onError
+                                        }" />
+
+            </div>
+        }
+    </div>-->
+@*<span class="upload-btn d-block"><img src="~assets/img/cloud-arrow-up.svg" alt="upload" /></span>
+    <p class="text-center mb-0">Drop files here to upload or click on <a href="javascript:;" class="text-decoration-none" >Browser</a> </p>*@
+<!--</div>
+</div>-->
+<!-- Placeholder -->
+<!--<div class="tab-pane pt-4 fade" id="placeholder" role="tabpanel" aria-labelledby="placeholder-tab">
+<div class="browse-box d-flex flex-column align-items-center justify-content-center">-->
+@*<span class="upload-btn d-block">*@<!----><!--<img src="~/assets/img/cloud-arrow-up.svg" alt="upload"  class="upload-btn d-block" style="widows : 100px"/>--><!--@*</span>*@-->
+<!--<p class="text-center mb-0">Drop files here to upload or click on <a href="javascript:;" class="text-decoration-none">Browser</a> link.</p>-->
+<!--<div>
+            @using (Html.BeginForm("Index", "Brief", FormMethod.Post))
+            {
+                <div>
+                    <input name="files"
+                           type="file"
+                           accept="@Model.AllowedBriefPlaceholderFileMimetypeList"
+                           data-bind="kendoUpload: {
+                                                multiple: false,
+                                                async:
+                                                {
+                                                    saveUrl: '@Url.Action("AttachmentUpload", "Brief")',
+                                                    autoUpload: false,
+                                                    batch: true },
+                                                    enabled: placeholderUpload.uploadEnabled,
+                                                    select: placeholderUpload.onSelect,
+                                                    upload: placeholderUpload.onUpload },
+                                                localization: {
+                                                    uploadSelectedFiles: 'Add Placeholder'
+                                                }" />
+
+                </div>
+            }
+        </div>
+    </div>
+</div>-->
+<!-- Share File -->
+@*<div class="tab-pane pt-4 fade" id="share-file" role="tabpanel" aria-labelledby="share-tab">*@
+@*<div class="row">
+            <form class="col-12 col-lg-6" action="javascript:;" method="post">
+                <div class="row align-items-center mb-20">
+                    <div class="col-sm-4 mb-2 mb-sm-0"><label class="form-label f-14 mb-0">ShareFile URL</label></div>
+                    <div class="col-sm-8"><input class="input-box form-control" type="text"></div>
+                </div>
+                <div class="row align-items-center mb-20">
+                    <div class="col-sm-4 mb-2 mb-sm-0"><label class="form-label f-14 mb-0">User Name</label></div>
+                    <div class="col-sm-8"><input class="input-box form-control" type="text"></div>
+                </div>
+                <div class="row align-items-center mb-20">
+                    <div class="col-sm-4 mb-2 mb-sm-0"><label class="form-label f-14 mb-0">Password</label></div>
+                    <div class="col-sm-8"><input class="input-box form-control" type="password"></div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4 d-none d-sm-block">&nbsp;</div>
+                    <div class="col-sm-8">
+                        <button type="submit" class="btn btn-primary min-width90 f-14 custom-padding">Sign In</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>*@
+
+@*<div class="row border-top pt-3 mt-4">
+            <div class="col-12 col-md-3">
+                <a href="#" class="btn btn-outline-secondary f-14 custom-padding min-width90 mb-2 mb-md-0 d-block d-md-inline-block">Cancel</a>
+            </div>
+            <div class="col-12 col-md-9 d-md-flex justify-content-md-end">
+                <a href="#" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block">Run Macro(s)</a>
+                <a href="#" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block">PDF Editor</a>
+                <a href="#" class="btn btn-outline-primary f-14 custom-padding min-width90 ms-0 ms-md-3 mb-2 mb-md-0 d-block" data-bs-toggle="modal" data-bs-target="#exampleModal">Packege</a>
+                <a href="#" class="btn btn-primary f-14 custom-padding min-width90 ms-0 ms-md-3 d-block">Add Macro</a>
+            </div>
+        </div>
+
+    </div>*@
+
+
+
+
+
+
+
+
+
+
+
+<!-- Modal -->
+
+
+
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Brief Package</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+
+
+            <div class="modal-body">
+                <form class="col-12" action="javascript:;" method="post">
+                    <div class="row align-items-center mb-20">
+                        <div class="col-12 mb-2"><label class="form-label f-14 mb-0">Package Status - <span class="color-dark fw-bold">Not Generated</span></label></div>
+                        <div class="col-12"><input class="input-box form-control" type="text" value="Demo Brief"></div>
+                    </div>
+                    <div class="row align-items-center mb-20">
+                        <div class="col-12 mb-2"><label class="form-label f-14 mb-0">Package Options</label></div>
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-check custom-form-check mb-2">
+                                        <input class="form-check-input mt-0 me-2" type="checkbox" value="" id="packageOption1">
+                                        <label class="form-check-label" for="packageOption1">Include Index Page in Package</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check custom-form-check mb-2">
+                                        <input class="form-check-input mt-0 me-2" type="checkbox" value="" id="packageOption2">
+                                        <label class="form-check-label" for="packageOption2">Include Return Buttons</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check custom-form-check">
+                                        <input class="form-check-input mt-0  me-2" type="checkbox" value="" id="packageOption3">
+                                        <label class="form-check-label" for="packageOption3">Underline Hyperlinks</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="row align-items-center mb-20">
+                        <div class="col-12 mb-2"><label class="form-label f-14 mb-0">Link Compatibility</label></div>
+                        <div class="col-12">
+                            <select class="form-select">
+                                <option selected>Windows</option>
+                                <option value="1">OSX</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="row align-items-center mb-20">
+                        <div class="col-12 mb-2 "><label class="form-label f-14 mb-0">iPad Compatible Package Version</label></div>
+                        <div class="col-12">
+                            <select class="form-select">
+                                <option selected>Do Not Generate iPad Compatible Format</option>
+                                <option value="1">Generate Full iPad Format</option>
+                                <option value="2">Generate Lite iPad Format</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary min-width90" data-bs-dismiss="modal">Close</button>
+                <div>
+                    <button type="button" class="btn btn-outline-primary">Save Settings</button>
+                    <button type="button" class="btn btn-primary ms-3">Genrate Package</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+<div class="modal fade" id="BriefApplyMecroDetailsPopup" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="BriefModalLabel">Mecro Apply Details</h5>
+            </div>
+
+            <div class="modal-body mb-1">
+                <table class="table table-bordered table-hover">
+                    <tr>
+                        <td class="text-center">Text</td>
+                        <td class="text-center">Count</td>
+                    </tr>
+                    <tbody id="tblbodybriefappmecro">
+                        <tr>
+                            <td class="text-center" colspan="2">No record found(s).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary min-width90" data-bs-dismiss="modal">Close</button>
+                <button type="submit" id="btnApplyMecro" tabindex="1" class="btn btn-primary"   data-bind="click:applymacro ">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Html.Partial("_ShareFileTreeViewTemplates")
+<script type="text/javascript">
+    var panelBar
+	var kendowindow = $("#kendowidow").data("kendoWindow");
+	if (kendowindow = null) {
+		kendowindow.close();
+    }
+	$(function () {
+		var viewModel = new BriefLynx.Brief.ViewModel(@Model.BriefId, {
+		    baseUrl: '@Url.Action("Index", "Brief")',
+		    briefAttachmentGrid: $('#brief-document-grid').data('kendoGrid'),
+		    isShareFileAuthenticated: @Model.ShareFile.IsAuthenticated.ToString().ToLowerInvariant(),
+		    maxFileSizeBytes: @Model.MaxFileUploadSizeBytes,
+		    allowedExhibitFileTypes: @Html.Raw(JsonConvert.SerializeObject(Model.AllowedBriefAttachmentFileExtensionMimetypeMapping)),
+		    allowedPlaceholderFileTypes: @Html.Raw(JsonConvert.SerializeObject(Model.AllowedBriefPlaceholderFileExtensionMimetypeMapping))
+		});
+
+        ko.cleanNode($('#brief-detail-container'));
+        ko.applyBindings(viewModel, $('#brief-detail-container')[0]);
+
+
+        $("#briefgridListbar").kendoPanelBar();
+
+        var panelBar = $("#briefgridListbar").data("kendoPanelBar");
+
+        //panelBar.collapse($("#divbrieflist"), false);
+    });
+
+
+
+
+    //$('#btnApplyMecro').click(function () {
+    //    var wWidth = $(window).width();
+    //    var newLeft = Math.floor(wWidth / 2 - 450 / 2);
+
+    //    var notificationWidget = $('<span></span>').appendTo('body').kendoNotification({
+    //        autoHideAfter: 30000,
+    //        position: {
+    //            left: newLeft,
+    //            top: 120
+    //        }
+    //    }).data("kendoNotification");
+    //    if (self.briefId() > 0) {
+    //        $.ajax({
+    //            type: "POST",
+    //            url: "/Brief/ApplyMacro",
+    //            dataType: 'json',
+    //            data: { id: self.briefId() },
+    //            beforeSend: function () {
+    //                $('#waitrequest').show();
+    //            },
+    //            success: function (data) {
+    //                if (data.success) {
+    //                    notificationWidget.show(data.message, "success");
+    //                } else {
+    //                    notificationWidget.show(data.message, "error");
+    //                }
+    //            },
+    //            complete: function () {
+    //                $('#waitrequest').hide();
+    //            },
+    //            error: function (xhr, err) {
+    //                console.log(err);
+    //            }
+    //        });
+    //    }
+    //});
+
+    //function testExpression() {
+
+    //    $(".expressionTesterInput").hide();
+    //    $("#expressionTesterLoading").show();
+
+    //    $.get($("#expressionTestUrl").val() + '?targetText=' + $("#TargetText").val() + '&expression=' + $("#txtmecroname").val(), function (json) {
+    //        $("#expressionTesterLoading").hide();
+
+    //        if (json.status == 1) {
+    //            $(".expressionTesterResultDiv").show();
+    //            $("#expressionTesterResult").html(json.matchedText);
+    //        }
+    //        else {
+    //            $(".expressionTesterResultDiv").show();
+    //            $("#expressionTesterResult").html(json.msg);
+    //        }
+    //    });
+    //};
+
+    //function closeExpressionTestResult() {
+    //    $(".expressionTesterResultDiv").hide();
+    //    $(".expressionTesterInput").show();
+    //};
+
+
+     
+
+
+
+
+
+
+</script>
+
+
+<script src="~/Scripts/ajax/jquery.validate.min.js"></script>
+<script src="~/Scripts/ajax/jquery.validate.unobtrusive.min.js"></script>

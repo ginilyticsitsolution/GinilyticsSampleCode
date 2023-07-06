@@ -1,0 +1,125 @@
+<div [ngStyle]="{'opacity':  loading?'0.5':''}">
+    <nav class="navbar justify-content-between inner-pages-nav mb-0 pb-0">
+        <a class="navbar-brand ml-0 p-0" href="#" class="booktem">
+            <img src="assets/images/homePage/logo.png" class="booktem">
+        </a>
+
+        <ul class="already-sccount mr-0 hide-for-mobile">
+            <li class="nav-item">
+                Already have an account?<a href="" routerLink="/account/login">Log in</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="Sign-up">
+        <div class="container">
+            <h1 id="signUp">Sign up</h1>
+            <p class="form-text text-muted">Begin your all-in-one appointments experience!</p>
+
+            <div class="socialButton d-flex">
+                <div class="form-group w-50">
+                    <a [href]="googleReturnUrl"> <button class="w-100"><i class="bi bi-google"></i> </button></a>
+                </div>
+                <div class="form-group w-50">
+                    <a [href]="faceBookReturnUrl"><button class="w-100"><i class="bi bi-facebook"></i></button></a>
+                </div>
+            </div>
+            <div class="divider w-100 d-flex align-items-center">
+                <p class="m-0">Or continue with</p>
+            </div>
+            <form [formGroup]="signupForm" #signupForms="ngForm">
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="exampleInputEmail1">First name</label>
+                        <input type="text" class="form-control" required minlength="1" formControlName="firstName"
+                            id="exampleInputEmail1"
+                            [class.is-invalid]="firstName.invalid && (firstName.dirty || firstName.touched) && isSubmit">
+                        <div *ngIf="firstName.invalid && (firstName.dirty || firstName.touched)"
+                            class="invalid-feedback">
+                            <div *ngIf="firstName.errors?.['required']">First name is required.</div>
+                            <div *ngIf="firstName.errors?.['maxlength']">First name must have at most 30 characters.
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="exampleInputEmail1">Last name</label>
+                        <input type="text" class="form-control" required formControlName="lastName"
+                            id="exampleInputEmail1"
+                            [class.is-invalid]="lastName.invalid && (lastName.dirty || lastName.touched) && isSubmit">
+                        <div *ngIf="lastName.invalid && (lastName.dirty || lastName.touched)" class="invalid-feedback">
+                            <div *ngIf="lastName.errors?.['required']">Last name is required.</div>
+                            <div *ngIf="lastName.errors?.['maxlength']">Last name must have at most 30 characters.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="exampleInputPassword1">Phone number</label>
+                        <input type="text" class="form-control" id="exampleInputPassword1" required
+                            formControlName="phone"
+                            [class.is-invalid]="phone.invalid && (phone.dirty || phone.touched) && isSubmit">
+                        <div *ngIf="phone.invalid && (phone.dirty || phone.touched)" class="invalid-feedback">
+                            <div *ngIf="phone.errors?.['required']">Phone number is required.</div>
+                            <div *ngIf="phone.errors?.['minlength']">Phone number must have at least 8 numbers.</div>
+                            <div *ngIf="phone.errors?.['maxlength']">Phone number must have at most 12 numbers.</div>
+                            <div *ngIf="phone.errors?.['pattern']">Please enter valid phone number.</div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" formControlName="email" required
+                            [class.is-invalid]="email.invalid && (email.dirty || email.touched) && isSubmit">
+                        <div *ngIf="email.invalid && (email.dirty || email.touched)" class="invalid-feedback">
+                            <div *ngIf="email.errors?.['required']">Email is required.</div>
+                            <div *ngIf="email.errors?.['maxlength']">Email must have at most 30 characters.</div>
+                            <div
+                                *ngIf="!email.errors?.['required'] && !email.errors?.['minlength'] && !email.errors?.['maxlength'] && email.errors?.['emailValidator']">
+                                Invalid email format.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="exampleInputPassword1">Password</label>
+                        <input type="password" class="form-control" id="exampleInputPassword1"
+                            formControlName="password" required
+                            [class.is-invalid]="password.invalid && (password.dirty || password.touched) && isSubmit">
+                        <div *ngIf="password.invalid && (password.dirty || password.touched)" class="invalid-feedback">
+                            <div *ngIf="password.errors?.['required']">Password is required.</div>
+                            <div *ngIf="password.errors?.['pattern']">Password must contain at least one number and one
+                                uppercase and lowercase letter, and at least 8 or more characters.</div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="createpass" class="hide-for-mobile"></label>
+                        <!-- [disabled]="!signupForms.form.valid && !isSubmit" -->
+                        <button class="btn btn-primary filled w-100" 
+                            (click)="createAccount()">Create account</button>
+                    </div>
+                </div>
+            </form>
+            <div class="text-center w-100">
+                <!-- [disabled]="!signupForms.form.valid" -->
+                <button class="btn btn-outline-primary create" 
+                    (click)="createBusiness()">Create a business
+                    account</button>
+            </div>
+            <div class="view-for-mobile text-center w-100">
+                <p class="mb-0">
+                    Already have an account?<a href="" routerLink="/account/login">Log in</a>
+                </p>
+            </div>
+            <div id="tAndC" class="signup-footer text-center">
+                <p>By signing up you agree to our</p> <br>
+                <a href="">Terms of Service</a>
+                <p>and</p>
+                <a href="">Privacy Policy</a>
+                <div class="copyright">
+                    <p class="">©Booktem</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<mat-spinner *ngIf="loading"></mat-spinner>

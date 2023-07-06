@@ -1,0 +1,1157 @@
+@model WirelessSupport.Model.ViewModel.CompanyViewModel
+@using WirelessSupport.Web.Helper
+@using WirelessSupport.Model.ViewModel.Enums
+
+@{
+    ViewData["Title"] = "AccountList";
+}
+
+@{
+    var firstDisabled = !Model.pagingList.HasFirstPage ? "disabled btn-primary" : "btn-outline-primary";
+    var lastDisabled = !Model.pagingList.HasLastPage ? "disabled btn-primary" : "btn-outline-primary";
+    var prevDisabled = !Model.pagingList.HasPreviousPage ? "disabled btn-primary" : "btn-outline-primary";
+    var nextDisabled = !Model.pagingList.HasNextPage ? "disabled btn-primary" : "btn-outline-primary";
+    var lastnumDisabled = !Model.pagingList.HasLastNumPage ? "disabled btn-primary" : "btn-outline-primary";
+    var firstnumDisabled = !Model.pagingList.HasFirstNumPage ? "disabled btn-primary" : "btn-outline-primary";
+    var totalPageNo = Model.pagingList.TotalPageNo;
+    var currentPageNo = Model.pagingList.PageIndex;
+}
+<style>
+    .hideclasall {
+        display: none;
+    }
+
+    .removebtnall {
+        width: 4%;
+    }
+
+    #OrderAssignModal {
+        opacity: 1;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .divmain-grid {
+        display: flex;
+    }
+
+    .divmain-grid-1 {
+        align-self: center;
+    }
+
+    .divmain-grid-2 {
+        /*width: 10%;*/
+        display: flex;
+        margin-left: 15px;
+    }
+
+    .added-header {
+        font-weight: 500;
+        font-size: 18px;
+    }
+
+    .added-detail {
+        color: #8d97ad;
+        margin-left: 50px;
+        font-size: 14px;
+    }
+
+    .action-option {
+        font-size: 14px;
+    }
+
+        .action-option:hover {
+            color: var(--bs-white);
+            background-color: var(--bs-primary);
+        }
+
+    .width-96 {
+        width: 96px;
+    }
+
+    .actoinbtn {
+        right: 163px;
+    }
+
+    .add-btn .btn {
+        font-size: 13px;
+        padding: 3px 15px;
+        min-height: 27px;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        z-index: 1000;
+        display: none;
+        min-width: 6rem;
+        padding: 0 0;
+        margin: 0;
+        font-size: 1rem;
+        color: var(--bs-dark);
+        text-align: left;
+        list-style: none;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid rgba(0, 0, 0, 0);
+        border-radius: 3px;
+        box-shadow: 0 0 5px 0 rgb(0 0 0 / 25%);
+    }
+</style>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css" />
+
+<div class="row">
+    <div class="col-12">
+        <div class="card h-100">
+            @if ("CompanyAccount".Equals(ViewContext.RouteData.Values["controller"].ToString()))
+            {
+                @if (Context.Session.HasPermission((int)GlobalEnums.Modules.AccountModule, (int)GlobalEnums.ModuleRoles.Create))
+                {
+                    <div class="add-btn position-absolute">
+                        <a asp-controller="CompanyAccount" asp-action="AddAccount" class="btn btn-outline-primary float-end">Add New Account</a>
+                    </div>
+                }
+            }
+            <div class="col-12 col-sm-6 col-md-3 col-lg-2 mb-20 add-btn position-absolute actoinbtn width-96">
+
+                <div class="dropdown">
+                    <a class="btn btn-primary dropdown-toggle width-96" style="color: white" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                        Action
+                    </a>
+
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+
+                        @if (Context.Session.HasPermission((int)GlobalEnums.Modules.AccountModule, (int)GlobalEnums.ModuleRoles.AssignOrChange))
+                        {
+                            <li style="text-align: left; cursor: not-allowed;">
+                                <a href="javascript:;" class="dropdown-item action-option" id="AccountAssign"> Assign </a>
+
+                            </li>
+                        }
+                        <li style="text-align:left"><a class="dropdown-item action-option" id="acexports">Export</a></li>
+
+                        @if (Context.Session.HasPermission((int)GlobalEnums.Modules.AccountModule, (int)GlobalEnums.ModuleRoles.Delete))
+                        {
+                            <li style="text-align:left"><a class="dropdown-item action-option" id="deletee" href="javascript:void(0)">Delete</a></li>
+                        }
+
+                    </ul>
+                </div>
+            </div>
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item ms-4" role="presentation">
+                    <a class="nav-link" id="myLeads-tab" asp-controller="CompanyAccount" asp-action="MyAccountList">My Accounts<span id="lblcountMYAccount"></span></a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" id="assignedLeads-tab" href="javascript:;">All Accounts  <span id="lblcountAllAccount"></span> </a>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+
+                <div class="tab-pane fade show active" id="myLeads" role="tabpanel" aria-labelledby="myLeads-tab">
+                    <form asp-action="AccountList" asp-controller="CompanyAccount" method="get" id="accountsearch1">
+                        <div class="row search-filters pt-2">
+                            <div class="col-md-6 col-lg-4 col-xxl-2 mb-20">
+                                <div class="form-floating">
+                                    <input type="hidden" id="myaccountsonly" value="true" />
+                                    @Html.TextBoxFor(m => m.Filters, new { @class = "form-control" })
+                                    @*@Html.ValidationMessageFor(m => m.Filters)*@
+                                    <label>Search here</label>
+                                </div>
+                            </div>
+                            <div class="col-auto col mb-20">
+                                <div class="form-floating">
+                                    @Html.DropDownListFor(model => model.CarrierId, new SelectList(Model.CarrierList, "CarrierId", "CarrierTitle"), "--Select Carrier--", new { @class = "form-control" })
+                                    <label>Carrier</label>
+                                </div>
+                            </div>
+                            <div class="col col-xl-2 mb-20">
+                                <div class="form-floating">
+                                    @Html.TextBoxFor(m => m.NextContactDate, "{0:MM/dd/yyyy}", new { @class = "selectdate form-control getdate", @autocomplete = "off" })
+                                    <label>Next Connect Date</label>
+                                </div>
+                            </div>
+                            <div class="col col-xl-2 mb-20">
+                                <div class="form-floating">
+                                    @Html.DropDownListFor(m => m.AccountStatusId, new SelectList(Model.AccountStatusList, "value", "Text"), "--Select Status--", new { @class = "form-control" })
+                                    @*@Html.DropDownListFor(model => model.CurrentStatusId, new List<SelectListItem> { new SelectListItem { Text = "Active", Value = "1" }, new SelectListItem { Text = "Inactive", Value = "0" } }, "--Select Status--", new { @class = "form-control" })*@
+
+                                    <label>Status</label>
+                                </div>
+                            </div>
+                            <div class="col col-xl-2 mb-20">
+                                <div class="form-floating">
+                                    @Html.DropDownListFor(model => model.AccountRepId, new SelectList(Model.AccountRepList, "AccountRepId", "AccountRepName"), "--Select Account Rep--", new { @class = "form-control" })
+                                    <label>Account Rep</label>
+                                </div>
+                            </div>
+                            <div class="col col-xl-2 mb-20 mt-2">
+                                <div class="form-check">
+                                    @Html.CheckBoxFor(m => m.AccountsWithSale, new { @class = "form-check-input" })
+                                    <label for="AccountsWithSale" class="form-check-label">Accounts with Sale</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" asp-for="isreset" id="isresets" />
+                        @if (Model.issearch == true)
+                        {
+                            <div class="advance-search-all-from @ViewBag.AdvanceSearch advncsrchmdls" style="display: none;" id="advncsrchmdlall">
+                                <div class="row" id="advsecmaindivall">
+                                    @*@foreach (var item in Model.AdvanceSearchmodel.Select((value, i) => new { i, value }))
+                                        {*@
+
+                                    <div class="col-12 col-lg-8 col-xl-6">
+                                        <div class="addsearchitemmainall search-filters" id="Coall_0">
+                                            <section class="addsearchitemall row" id="advancesectionall_0">
+                                                <div class="col col-xxl-6 mb-20">
+                                                    <div class="form-floating">
+                                                        @Html.DropDownListFor(model => Model.AdvanceSearchmodel[0].AdvanceSearchKey, new List<SelectListItem> { new SelectListItem { Text = "Email", Value = "Email" },
+                                                                                                                                                                     new SelectListItem { Text = "Phone", Value = "Phone" },
+                                                                                                                                                                     new SelectListItem { Text = "Mobile", Value = "MainPhone" },
+                                                                                                                                                                     new SelectListItem { Text = "Account Name", Value = "AccountName" } },
+                                     "--Select Advance Search--", new { @class = "form-control selectvalue AdvanceSearchmodel_AdvanceSearchKey" })
+                                                        <label>Choose Field</label>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-xxl-6 mb-20">
+                                                    <div class="form-floating">
+                                                        @Html.TextBoxFor(m => m.AdvanceSearchmodel[0].AdvanceSearchValue, new { @class = "form-control mobileformate valuefordrpdwn AdvanceSearchmodel_AdvanceSearchValue" })
+                                                        @*<input type="text" asp-for="AdvanceSearchmodel[item.i].AdvanceSearchValue" class="form-control AdvanceSearchmodel_AdvanceSearchValue" name="AdvanceSearchmodel[@item.i].AdvanceSearchValue" id="AdvanceSearchmodel[@item.i].AdvanceSearchValue" />*@
+                                                        <label>Value</label>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" id="modelcount" value="@Model.AdvanceSearchmodel.Count" />
+
+                                            </section>
+
+
+                                            <div class="ms-1" id="AdvanceSearchmodel"></div>
+
+                                        </div>
+                                    </div>
+                                    @*}*@
+                                    @*}*@
+                                    <div class="col-md-6 btnadvanceall">
+                                        <div class="row btnadvancealltp" id="rowbtnall_0">
+                                            <div class="col-2 col-xl-1 mb-20   removeadvanceall" id="removeadvance_0" data-indexnb="0" style="display:none">
+                                                <div type="submit" class="btn removeadvance  btn-icon btn-outline-danger" id="removeRow" data-index="0">
+                                                    <i aria-hidden="true" class="fas fa-trash"></i>
+                                                </div>
+                                            </div>
+                                            <div class="col col-xxl-2 mb-20 " id="rmvaddall">
+                                                <div class="form-floating ">
+                                                    <a href="javascript:void(0);" class="btn btn-outline-primary btn-icon addCF" onclick="addnewall()" id="checkbtn"><i class="fas fa-plus"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" asp-for="issearch" id="isissearch" />
+                                @* <div class="row search-filters">
+                                        <div class="col col-xxl-2 mb-20">
+                                            <button type="reset" class="btn btn-outline-secondary clear-search-filterss">Clear Filter</button>
+                                            <button type="button" class="btn btn-outline-primary ms-3 advancesearchlist" id="advancesearchlist">Apply</button>
+                                        </div>
+                                    </div>*@
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="advance-search-all-from @ViewBag.AdvanceSearch advncsrchmdls" style="display: none;" id="advncsrchmdlall">
+                                <div class="row" id="advsecmaindivall" style="display:none">
+                                    @*@foreach (var item in Model.AdvanceSearchmodel.Select((value, i) => new { i, value }))
+                                        {*@
+
+                                    <div class="col-12 col-lg-8 col-xl-6">
+                                        <div class="addsearchitemmainall search-filters" id="Coall_0">
+                                            <section class="addsearchitemall row" id="advancesectionall_0">
+                                                <div class="col col-xxl-6 mb-20">
+                                                    <div class="form-floating">
+                                                        @Html.DropDownListFor(model => Model.AdvanceSearchmodel[0].AdvanceSearchKey, new List<SelectListItem> { new SelectListItem { Text = "Email", Value = "Email" },
+                                                                                                                                                                     new SelectListItem { Text = "Phone", Value = "Phone" },
+                                                                                                                                                                     new SelectListItem { Text = "Mobile", Value = "MainPhone" },
+                                                                                                                                                                     new SelectListItem { Text = "Account Name", Value = "AccountName" } },
+                                 "--Select Advance Search--", new { @class = "form-control selectvalue AdvanceSearchmodel_AdvanceSearchKey" })
+                                                        <label>Choose Field</label>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-xxl-6 mb-20">
+                                                    <div class="form-floating">
+                                                        @Html.TextBoxFor(m => m.AdvanceSearchmodel[0].AdvanceSearchValue, new { @class = "form-control mobileformate valuefordrpdwn AdvanceSearchmodel_AdvanceSearchValue" })
+                                                        @*<input type="text" asp-for="AdvanceSearchmodel[item.i].AdvanceSearchValue" class="form-control AdvanceSearchmodel_AdvanceSearchValue" name="AdvanceSearchmodel[@item.i].AdvanceSearchValue" id="AdvanceSearchmodel[@item.i].AdvanceSearchValue" />*@
+                                                        <label>Value</label>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" id="modelcount" value="@Model.AdvanceSearchmodel.Count" />
+
+                                            </section>
+
+
+                                            <div class="ms-1" id="AdvanceSearchmodel"></div>
+
+                                        </div>
+                                    </div>
+                                    @*}*@
+                                    @*}*@
+                                    <div class="col-md-6 btnadvanceall">
+                                        <div class="row btnadvancealltp" id="rowbtnall_0">
+                                            <div class="col-2 col-xl-1 mb-20   removeadvanceall" id="removeadvance_0" data-indexnb="0" style="display:none">
+                                                <div type="submit" class="btn removeadvance  btn-icon btn-outline-danger" id="removeRow" data-index="0">
+                                                    <i aria-hidden="true" class="fas fa-trash"></i>
+                                                </div>
+                                            </div>
+                                            <div class="col col-xxl-2 mb-20 " id="rmvaddall">
+                                                <div class="form-floating ">
+                                                    <a href="javascript:void(0);" class="btn btn-outline-primary btn-icon addCF" onclick="addnewall()" id="checkbtn"><i class="fas fa-plus"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" asp-for="issearch" id="isissearch" />
+                                @* <div class="row search-filters">
+                                        <div class="col col-xxl-2 mb-20">
+                                            <button type="reset" class="btn btn-outline-secondary clear-search-filterss">Clear Filter</button>
+                                            <button type="button" class="btn btn-outline-primary ms-3 advancesearchlist" id="advancesearchlist">Apply</button>
+                                        </div>
+                                    </div>*@
+                            </div>
+                        }
+                        <div class="col-12 text-lg-end mb-20">
+                            @Html.HiddenFor(m => m.AdvanceSearchValue)
+                            <button type="button" class="btn btn-outline-secondary btnadvancesearch" id="btnAdvance_0">Advance Search</button>
+                            <button type="button" class="btn btn-outline-danger fs-7 mw-80" id="ClearAccountFilter">Clear Filter</button>
+                            <button type="submit" class="btn btn-outline-primary fs-7 mw-80 ms-2" id="applyfilterall">Apply</button>
+                        </div>
+                    </form>
+
+                    <div id="accountlist">
+                        <div class="table-responsive mb-3">
+                            <table class="table table-hover icon-table w-1699 mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">
+                                            <input class="form-check-input flexSelectAll" type="checkbox" value="" id="flexSelectAll">
+                                        </th>
+                                        <th scope="col">
+                                            @Html.ActionLink("Account Name", "AccountList", new { sortField = "AccountName", currentSortField = ViewBag.SortField, currentSortOrder = ViewBag.SortOrder, currentFilter = ViewData["CurrentFilter"] })
+                                        </th>
+                                        <th scope="col">
+                                            @Html.ActionLink("Primary Contact", "AccountList", new { sortField = "ContactName", currentSortField = ViewBag.SortField, currentSortOrder = ViewBag.SortOrder, currentFilter = ViewData["CurrentFilter"] })
+                                        </th>
+                                        <th scope="col">
+                                            @Html.ActionLink("Email", "AccountList", new { sortField = "Email", currentSortField = ViewBag.SortField, currentSortOrder = ViewBag.SortOrder, currentFilter = ViewData["CurrentFilter"] })
+                                        </th>
+                                        <th scope="col">
+                                            @Html.ActionLink("Phone", "AccountList", new { sortField = "MainPhone", currentSortField = ViewBag.SortField, currentSortOrder = ViewBag.SortOrder, currentFilter = ViewData["CurrentFilter"] })
+                                        </th>
+
+                                        <th scope="col">
+                                            @Html.ActionLink("Last Connected", "AccountList", new { sortField = "LastConnect", currentSortField = ViewBag.SortField, currentSortOrder = ViewBag.SortOrder, currentFilter = ViewData["CurrentFilter"] })
+                                        </th>
+                                        <th scope="col">
+                                            @Html.ActionLink("Next Connect Date", "AccountList", new { sortField = "NextContactDate", currentSortField = ViewBag.SortField, currentSortOrder = ViewBag.SortOrder, currentFilter = ViewData["CurrentFilter"] })
+                                        </th>
+                                        <th scope="col">
+                                            @Html.ActionLink("No of Devices", "AccountList", new { sortField = "NoofDevices", currentSortField = ViewBag.SortField, currentSortOrder = ViewBag.SortOrder, currentFilter = ViewData["CurrentFilter"] })
+                                        </th>
+
+                                        @*  <th scope="col" width="170" class="text-center" style="color: #08b4ec; text-decoration: underline">Action<input type="hidden" id="requestID" value=""></th>*@
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.pagingList.Count > 0)
+                                    {
+                                        foreach (var item in Model.pagingList)
+                                        {
+                                            var viewaccounturl = "/CompanyAccount/AccountAddressList?accountid=" + item.AccountId;
+
+                                            if (string.IsNullOrEmpty(item.StatusColour) || string.IsNullOrWhiteSpace(item.StatusColour))
+                                            {
+                                                item.StatusColour = "#000000";
+                                            }
+
+                                            <tr class="cursor-pointer task-card account_ac_cl_@item.AccountId" onclick="ViewAccount('@viewaccounturl', @item.AccountId)">
+                                                <td>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input accountcheckbox" type="checkbox" value="@item.AccountId" id="flexTaskOne" data-isAddedit="2">
+                                                        <label class="form-check-label" for="flexTaskOne"></label>
+                                                    </div>
+                                                </td>
+                                                <td onclick="ViewAccount('@viewaccounturl', @item.AccountId)">@item.AccountName</td>
+                                                <td onclick="ViewAccount('@viewaccounturl', @item.AccountId)">@item.ContactName</td>
+                                                <td onclick="ViewAccount('@viewaccounturl', @item.AccountId)">@item.Email</td>
+                                                <td onclick="ViewAccount('@viewaccounturl', @item.AccountId)">@item.MainPhone</td>
+                                                <td onclick="ViewAccount('@viewaccounturl', @item.AccountId)">@Convert.ToString(string.Format("{0:MM/dd/yyyy}", item.LastConnect))</td>
+                                                <td onclick="ViewAccount('@viewaccounturl', @item.AccountId)">@Convert.ToString(string.Format("{0:MM/dd/yyyy}", item.NextContactDate))</td>
+                                                <td onclick="ViewAccount('@viewaccounturl', @item.AccountId)">@item.NoofDevices</td>
+
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td class="text-center" colspan="9">No Record Found</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                    <div id="pagging" class="mt-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fs-7">
+                                Page No : @currentPageNo of @totalPageNo
+                            </span>
+                            <span class="fs-7 ms-3">
+                                Total Records:
+                                @foreach (var item in Model.pagingList.Take(1))
+                                {
+                                    <span>
+                                        @item.MyAccountTotalCount
+                                    </span>
+                                }
+
+                            </span>
+                            <span class="fs-7 ms-3">
+                                <form style="display:inline">
+                                    Show
+                                    <select class="" id="_account_list_range" name="pageSize">
+                                        @{
+
+                                            int[] _ranges = new int[] { 10, 25, 50, 100 };
+                                        }
+                                        @foreach (int i in _ranges)
+                                        {
+
+                                            if (ViewBag.pageSize == i)
+                                            {
+                                                <option value="@ViewBag.pageSize" selected>@ViewBag.pageSize</option>
+                                            }
+                                            else
+                                            {
+
+                                                <option value="@i">@i</option>
+                                            }
+                                        }
+
+                                    </select>
+                                    Entries
+                                </form>
+                            </span>
+                        </div>
+
+                        <div>
+                            <a asp-action="AccountList"
+                               asp-route-fromPaging="true"
+                               asp-route-sortField="@ViewBag.SortField"
+                               asp-route-currentSortField="@ViewBag.SortField"
+                               asp-route-currentSortOrder="@ViewBag.SortOrder"
+                               asp-route-pageNo="@(Model.pagingList.TotalPageNo)"
+                               asp-route-pageSize="@ViewBag.pageSize"
+                               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                               class="btn float-end ms-2 @lastDisabled">
+                                Last
+                            </a>
+
+                            <a asp-action="AccountList"
+                               asp-route-fromPaging="true"
+                               asp-route-sortField="@ViewBag.SortField"
+                               asp-route-currentSortField="@ViewBag.SortField"
+                               asp-route-currentSortOrder="@ViewBag.SortOrder"
+                               asp-route-pageNo="@(Model.pagingList.PageIndex + 1)"
+                               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                               asp-route-pageSize="@ViewBag.pageSize"
+                               class="btn  float-end ms-2 @nextDisabled">
+                                Next
+                            </a>
+                            @if (currentPageNo != totalPageNo && totalPageNo != 0)
+                            {
+                                <a asp-action="AccountList"
+                                   asp-route-fromPaging="true"
+                                   asp-route-sortField="@ViewBag.SortField"
+                                   asp-route-currentSortField="@ViewBag.SortField"
+                                   asp-route-currentSortOrder="@ViewBag.SortOrder"
+                                   asp-route-pageNo="@(currentPageNo + 1)"
+                                   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                   asp-route-pageSize="@ViewBag.pageSize"
+                                   class="btn  float-end ms-2 @lastnumDisabled">
+                                    @(currentPageNo + 1)
+                                </a>}
+                            <a asp-action="AccountList"
+                               asp-route-fromPaging="true"
+                               asp-route-sortField="@ViewBag.SortField"
+                               asp-route-currentSortField="@ViewBag.SortField"
+                               asp-route-currentSortOrder="@ViewBag.SortOrder"
+                               asp-route-pageNo="@currentPageNo"
+                               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                               asp-route-pageSize="@ViewBag.pageSize"
+                               class="btn btn-primary float-end ms-2">
+                                @currentPageNo
+                            </a>
+                            @if (currentPageNo != 1)
+                            {
+                                <a asp-action="AccountList"
+                                   asp-route-fromPaging="true"
+                                   asp-route-sortField="@ViewBag.SortField"
+                                   asp-route-currentSortField="@ViewBag.SortField"
+                                   asp-route-currentSortOrder="@ViewBag.SortOrder"
+                                   asp-route-pageNo="@(currentPageNo - 1)"
+                                   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                   asp-route-pageSize="@ViewBag.pageSize"
+                                   class="btn float-end ms-2 @firstnumDisabled">
+                                    @(currentPageNo - 1)
+                                </a>}
+
+
+                            <a asp-action="AccountList"
+                               asp-route-fromPaging="true"
+                               asp-route-sortField="@ViewBag.SortField"
+                               asp-route-currentSortField="@ViewBag.SortField"
+                               asp-route-currentSortOrder="@ViewBag.SortOrder"
+                               asp-route-pageNo="@(Model.pagingList.PageIndex - 1)"
+                               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                               asp-route-pageSize="@ViewBag.pageSize"
+                               class="btn float-end me-1 ms-2 @prevDisabled">
+                                Previous
+                            </a>
+                            <a asp-action="AccountList"
+                               asp-route-fromPaging="true"
+                               asp-route-sortField="@ViewBag.SortField"
+                               asp-route-currentSortField="@ViewBag.SortField"
+                               asp-route-currentSortOrder="@ViewBag.SortOrder"
+                               asp-route-pageNo=1
+                               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                               asp-route-pageSize="@ViewBag.pageSize"
+                               class="btn  float-end @firstDisabled">
+                                First
+                            </a>
+                            @*<span class="mb-0">
+                                    Page No : @currentPageNo of @totalPageNo
+                                </span>
+                                Total Records:
+                                @foreach (var item in Model.pagingList.Take(1))
+                                {
+                                    <span class="mb-0 position-relative">
+                                        @item.MyAccountTotalCount
+                                    </span>
+                                }*@
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body p-5">
+                <div class=" text-center">
+                    <div class="mb-20">
+                        <i class="far fa-trash-alt text-danger fa-3x"></i>
+                    </div>
+
+                    <p class="text-dark mb-20">Are you sure you want to delete.</p>
+
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeDeleteModal">No</button>
+                        <button type="button" class="btn btn-primary ms-3" id="deleteaccount">Yes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noteModalLabel">Assign</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-floating mb-20">
+                    @Html.DropDownListFor(model => model.AccountOwnerId, new SelectList(Model.UserList, "Id", "UserName"), "-- Select --", new { @class = "form-control" })
+                    <label>Assign To</label>
+                </div>
+                <div class="form-floating">
+                    <div class="form-check form-check-inline form-radio">
+                        <input class="form-check-input" type="radio" name="assignLeadOptions" id="assignLead1" value="Owner" checked>
+                        <label class="form-check-label" for="assignLead1">Owner</label>
+                    </div>
+                    <div class="form-check form-check-inline form-radio">
+                        <input class="form-check-input" type="radio" name="assignLeadOptions" id="assignLead2" value="Representative">
+                        <label class="form-check-label" for="assignLead2">Representative</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeAssignModal">Close</button>
+                <button type="button" class="btn btn-primary ms-3" id="assignaccount">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link href="~/css/account.css" rel="stylesheet" />
+<script src="~/js/ViewJs/CompanyAccount.js"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="~/js/ViewJs/account.js"></script>
+<script type='text/javascript' src="https://rawgit.com/RobinHerbots/jquery.inputmask/3.x/dist/jquery.inputmask.bundle.js"></script>
+<script>
+    //jQuery("#ClearAccountFilter").click(function () {
+    //    debugger;
+    //    jQuery("#Filters").val("");
+    //    jQuery("#CarrierId").val("");
+    //    jQuery("#IndustryTypeId").val("");
+    //    jQuery("#AccountStatusId").val("");
+    //    jQuery("#AccountRepId").val("");
+    //    jQuery("#NextContactDate").val("");
+    //    jQuery("input[name=AccountsWithSale]").attr('checked', false);
+    //    jQuery("#AdvanceSearchmodel_0__AdvanceSearchKey").clearFields();
+    //    jQuery("#AdvanceSearchmodel_0__AdvanceSearchValue").clearFields();
+    //    $("#applyfilter").trigger("click");
+
+
+    //});
+</script>
+<script>
+    if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+    }
+    let button = document.querySelector("#deletee");
+
+    $("#deletee").click(function () {
+        var a = $(".accountcheckbox:checked").length;
+        if (a > 0) {
+            $("#deleteModal").modal('show');
+        } else {
+            toastr.error("Please select atleast one account", "Account");
+
+        }
+    });
+
+    $("#btnAdvance_0").click(function () {
+
+        $("#advsecmaindivall").show();
+
+    });
+    $("#AccountAssign").click(function () {
+        var a = $(".accountcheckbox:checked").length;
+        if (a > 0) {
+            $("#assignModal").modal('show');
+        } else {
+            toastr.error("Please select atleast one account", "Account");
+
+        }
+    });
+    $('.accountcheckbox').change(function () {
+        let a = $(".accountcheckbox:checked").length;
+        if ($(".accountcheckbox:checked").length <= 0) {
+            button.disabled = true; //button remains disabled
+        } else {
+            button.disabled = false; //button is enabled
+        }
+    });
+    $('.accountcheckbox').click(function (e) {
+        e.stopPropagation();
+    });
+    $('.flexSelectAll').change(function () {
+        let a = $(".flexSelectAll:checked").length;
+        if ($(".flexSelectAll:checked").length <= 0) {
+            button.disabled = true; //button remains disabled
+        } else {
+            button.disabled = false; //button is enabled
+        }
+    });
+    $(".AdvanceSearchmodel_AdvanceSearchKey").unbind().change(function () {
+        var ID = $(this).attr("id");
+        var splitarr = ID.split('_')[1];
+        $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchValue").val("");
+        var formate = $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchKey").val();
+        switch (formate) {
+            case "Phone":
+            case "MainPhone":
+                $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchValue").inputmask("(999)-999-9999");
+                break;
+            default:
+                $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchValue").inputmask();
+                break;
+        }
+        var advancevalue = $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchValue").val();
+        var KeyValue = formate.concat(advancevalue);
+    });
+
+
+    //---------Higlight Record Onclick---------
+    function ViewAccount(url, AccountId) {
+        var activeaccount = AccountId;
+        localStorage.setItem("allaccount-active-id", activeaccount);
+        localStorage.removeItem("AccountDetailsRequest");
+
+        if (url != null && url != undefined) {
+            window.location.href = url;
+        }
+    }
+
+    var handleactivefunctions = function () {
+        var getactiveaccounttid = localStorage.getItem("allaccount-active-id");
+
+        if (getactiveaccounttid != undefined && getactiveaccounttid != null && getactiveaccounttid.toLocaleString().length > 0) {
+            $(".account_ac_cl_" + getactiveaccounttid).addClass("alert-success");
+        }
+
+    }
+
+    $(document).ready(function () {
+        handleactivefunctions();
+
+
+        $("#acexports").on('click', function () {
+            var dataobject = {};
+            var array = [];
+            $(".accountcheckbox:checked").each(function () {
+                array.push(Number($(this).val()));
+            });
+            console.log(array);
+            dataobject["accountId"] = array;
+
+            window.location.href = "/CompanyAccount/ExportAllAccounts?straccountId=" + array.toString();
+
+        });
+    });
+    function inputMAskingall(id) {
+       
+        //var ID = $(this).attr("id");
+        var ID = id;
+        var splitarr = ID.split('_')[1];
+        $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchValue").val("");
+        var formate = $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchKey").val();
+       
+        switch (formate) {
+            case "Phone":
+            case "MainPhone":
+                $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchValue").inputmask("(999)-999-9999");
+
+                break;
+            default:
+                $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchValue").inputmask();
+                break;
+        }
+        var advancevalue = $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchValue").val();
+        var KeyValue = formate.concat(advancevalue);
+    }
+</script>
+<script>
+    var count = 0;
+    $(document).ready(function () {
+
+
+
+        $("select#_account_list_range").change(function (e) {
+            var pageSize = new FormData(e.target.parentElement).get("pageSize");
+
+            var path = `/CompanyAccount/AccountList?fromPaging=true&sortField=AccountId&currentSortField=AccountId&currentSortOrder=Desc&pageNo=1&pageSize=${pageSize}`;
+
+            window.location.href = window.location.origin + path;
+
+        });
+
+        $(".datepicker").datepicker({
+            dateFormat: "yy/mm/dd",
+            todayHighlight: true,
+            autoclose: true
+        });
+
+        $(".addCF1").click(function () {
+            $(".addicon").empty();
+            $("#chckrmvall").removeClass("d-none");
+            $("#checkbtnall1").removeClass("addCF1");
+            $("#rmvaddall").empty();
+            $("#rmvaddall").addClass("d-none");
+            count++;
+        });
+
+        setTimeout(function () {
+            var NextContactDate = $("#NextContactDate").val();
+
+            if (NextContactDate.trim().length > 0) {
+                $("#NextContactDate").datepicker('setDate', moment(NextContactDate).format("MM/DD/YYYY"));
+            }
+
+        }, 100);
+
+        $('#accountsearch1').submit(function () {
+            var advancefilter = '';
+
+            $('[id^=AdvanceSearchmodel_]').each(function () {
+                var addserele = $(this).closest('.addsearchitemall').attr("id");
+
+                var splitarr = addserele.split('_')[1];
+
+                var srkey = $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchKey").val();
+                var srval = $("#AdvanceSearchmodel_" + splitarr + "__AdvanceSearchValue").val();
+                if (srkey.trim() != '' && srval.trim() != '') {
+                    if (advancefilter == '') {
+                        advancefilter = '<AdvanceFilter>';
+                    }
+                    if ($(this).is('select')) {
+                        if ($(this).val().length > 0)
+                            advancefilter = advancefilter + '<Field Name="' + $(this).val() + '"';
+                    }
+                    else {
+                        if ($(this).val().length > 0) {
+                            advancefilter = advancefilter + ' Value="' + $(this).val() + '"></Field>';
+                        } else {
+                            advancefilter = advancefilter + ' Value=""></Field>';
+                        }
+                    }
+                }
+            });
+            if (advancefilter != '') {
+                advancefilter = advancefilter + '</AdvanceFilter>';
+            }
+
+
+            $('#AdvanceSearchValue').val(advancefilter);
+
+            var currentselecteddate = $("#NextContactDate").val();
+
+            if (currentselecteddate.trim().length > 0) {
+                $("#NextContactDate").val(moment(currentselecteddate).format("YYYY/MM/DD"));
+            }
+
+        });
+        $(document).on('click', '.removeadvanceall', function () {
+            var index = $(this).data('indexnb');
+            if (index) {
+                index = $(this).data('indexnb');
+            }
+            else {
+                index = 0;
+            }
+            if (index == 0) {
+               
+                $('#AdvanceSearchmodel_0__AdvanceSearchValue').val(" ");
+                $("#AdvanceSearchmodel_0__AdvanceSearchKey").val(null);
+                $('#removeadvance_0').hide();
+                $('#advancesectionall_0').hide();
+            }
+            else {
+                var row = document.getElementById("Coall_" + index + "");
+                row.remove();
+                var row = document.getElementById("rowbtnall_" + index + "");
+                row.remove();
+
+                var lanth = $("#advncsrchmdlall").find(".addsearchitemmainall").last().attr("id");
+                indextt = lanth.split("_")[1];
+
+                index = index - 1;
+
+                var html = `<div class="col-2 col-xl-1 mb-20" id="rmvaddall">
+                                    <div class="form-floating ">
+                                        <a href="javascript:void(0);" class="btn btn-outline-primary btn-icon addCF" onclick="addnewall()" id="checkbtn"><i class="fas fa-plus"></i></a>
+                                    </div>
+                                </div>`;
+
+                var totallengthlist = $("#advncsrchmdlall").find(".addsearchitemmainall").length;
+
+                if (index > 0 && totallengthlist > 1) {
+                    var plustbnlanth = $("#rmvaddall").length;
+                    if (plustbnlanth == 0) {
+                        if (totallengthlist <= index) {
+                            var diff = index - totallengthlist;
+                            var indexs = index - diff;
+                            index = indexs - 1;
+
+                        }
+                        $("#rowbtnall_" + index).append(html);
+                    }
+                } else if (totallengthlist == 1) {
+                    $("#rowbtnall_0").append(html);
+                }
+            }
+
+        });
+        //var ids = $("#OrderID").val();
+        var advcsearchcountss =  @Model.AdvanceSearchmodel.Count;
+        var issearch = @Html.Raw(Json.Serialize(Model.issearch));/* $("#isissearch").val();*/
+        
+        if (advcsearchcountss > 1 && issearch == true && issearch != undefined) {
+           
+            var emails = @Html.Raw(Json.Serialize(Model.AdvanceSearchmodel));
+
+
+            //var email = emails.split(',');
+
+            var email = new Array();
+
+            $.each(emails, function (index, stremail) {
+                if (index > 0) {
+                    var length = $('.addsearchitemall').length;
+                    $("#advncsrchmdlall").find("#rmvaddall").remove();
+                    var getlenght = length;
+                    var htmlsss = ` <div class="col-12 col-lg-8 col-xl-6"><div class="addsearchitemmainall search-filters" id="Coall_{{index}}"><section class="addsearchitemall row"  id="advancesectionall_{{index}}"><div class="col col-xxl-6 mb-20">
+                                            <div class="form-floating">
+                                                <select class="form-control AdvanceSearchmodel_AdvanceSearchKey" id="AdvanceSearchmodel_{{index}}__AdvanceSearchKey" name="AdvanceSearchmodel[{{index}}].AdvanceSearchKey" onChange="inputMAskingall(this.id)"><option value="">--Select Advance Search--</option>
+                                                    <option value="Email">Email</option>
+                                                    <option value="Phone">Phone</option>
+                                                    <option value="MainPhone">Mobile</option>
+                                                    <option value="AccountName">Account Name</option>
+                                                 </select>
+                                                <label>Choose Field</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-xxl-6 mb-20">
+                                            <div class="form-floating">
+
+                                                <input class="form-control valuefordrpdown AdvanceSearchmodel_AdvanceSearchValue" id="AdvanceSearchmodel_{{index}}__AdvanceSearchValue" name="AdvanceSearchmodel[{{index}}].AdvanceSearchValue" type="text" value="">
+                                                <label>Value</label>
+                                            </div>
+                                        </div>
+
+                        </section></div>
+                               </div> <div class="col-md-6"id="btnadvanceall">
+                                    <div class="row" id="rowbtnall_{{index}}">
+                                        <div class="col-2 col-xl-1 mb-20   removeadvanceall" id="removeadvance_{{index}}" data-indexnb={{index}}>
+                                                    <div type="submit" class="btn  btn-icon btn-outline-danger" id="removeRow" data-index="{{index}}">
+                                                             <i aria-hidden="true" class="fas fa-trash"></i>
+                                                    </div>
+                                       </div>
+                                <div class="col-2 col-xl-1 mb-20" id="rmvaddall">
+                                    <div class="form-floating ">
+                                        <a href="javascript:void(0);" class="btn btn-outline-primary btn-icon addCF" onclick="addnewall()" id="checkbtn"><i class="fas fa-plus"></i></a>
+                                    </div>
+                                </div></div></div>`;
+
+
+
+
+
+                    $(".rmvaddall").empty();
+                    htmlsss = htmlsss.replaceAll('{{index}}', length);
+                    $('#advncsrchmdlall').find("#advsecmaindivall").append(htmlsss);
+                }
+                //else {
+                //    console.log(stremail);
+
+                //    $("#AdvanceSearchmodel_" + index + "__AdvanceSearchKey").val(stremail.advanceSearchKey).trigger("click");
+                //    $("#AdvanceSearchmodel_" + index + "__AdvanceSearchValue").val(stremail.advanceSearchValue);
+                //}
+
+
+                $("#AdvanceSearchmodel_" + index + "__AdvanceSearchKey").val(stremail.advanceSearchKey).trigger("click");
+                $("#AdvanceSearchmodel_" + index + "__AdvanceSearchValue").val(stremail.advanceSearchValue);
+            });
+
+        }
+
+    });
+    function addnewall(event) {
+        $('#advancesectionall_0').show();
+        $('#removeadvance_0').show();
+        var length = $('.addsearchitemall').length;
+        $("#advncsrchmdlall").find("#rmvaddall").remove();
+        var getlenght = length;
+        var html = ` <div class="col-12 col-lg-8 col-xl-6"><div class="addsearchitemmainall search-filters" id="Coall_{{index}}"><section class="addsearchitemall row"  id="advancesectionall_{{index}}"><div class="col col-xxl-6 mb-20">
+                                            <div class="form-floating">
+                                                <select class="form-control AdvanceSearchmodel_AdvanceSearchKey" id="AdvanceSearchmodel_{{index}}__AdvanceSearchKey" name="AdvanceSearchmodel[{{index}}].AdvanceSearchKey" onChange="inputMAskingall(this.id)"><option value="">--Select Advance Search--</option>
+                                                    <option value="Email">Email</option>
+                                                    <option value="Phone">Phone</option>
+                                                    <option value="MainPhone">Mobile</option>
+                                                    <option value="AccountName">Account Name</option>
+                                                 </select>
+                                                <label>Choose Field</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-xxl-6 mb-20">
+                                            <div class="form-floating">
+
+                                                <input class="form-control valuefordrpdown AdvanceSearchmodel_AdvanceSearchValue" id="AdvanceSearchmodel_{{index}}__AdvanceSearchValue" name="AdvanceSearchmodel[{{index}}].AdvanceSearchValue" type="text" value="">
+                                                <label>Value</label>
+                                            </div>
+                                        </div>
+
+                        </section></div>
+                               </div> <div class="col-md-6"id="btnadvanceall">
+                                    <div class="row" id="rowbtnall_{{index}}">
+   <div class="col-2 col-xl-1 mb-20   removeadvanceall" id="removeadvance_{{index}}" data-indexnb={{index}}>
+                                                    <div type="submit" class="btn  btn-icon btn-outline-danger" id="removeRow" data-index="{{index}}">
+                                                             <i aria-hidden="true" class="fas fa-trash"></i>
+                                                    </div>
+                                       </div>
+                                <div class="col-2 col-xl-1 mb-20" id="rmvaddall">
+                                    <div class="form-floating ">
+                                        <a href="javascript:void(0);" class="btn btn-outline-primary btn-icon addCF" onclick="addnewall()" id="checkbtn"><i class="fas fa-plus"></i></a>
+                                    </div>
+                                </div></div></div>`;
+
+
+
+
+
+        $(".rmvaddall").empty();
+        html = html.replaceAll('{{index}}', length);
+        $('#advncsrchmdlall').find("#advsecmaindivall").append(html);
+        //var lastele = $(".addsearchitemmainall:nth-last-child(2)").find(".addsearchitemall").attr("id");
+
+        //indextt = lastele.split("_")[1];
+
+        //$("#rmvaddall_" + indextt).addClass("hideclasall");
+        //$(".chckrmvall_" + indextt).removeClass("hideclasall");
+        //var htmls = `
+        //    <div type="submit" class="btn  btn-icon btn-outline-danger removebtnall" id="removeRow" data-index="{{index}}">
+        //        <i aria-hidden="true" class="fas fa-trash"></i>
+        //    </div>`;
+        //$("#advancesectionall_" + indextt).find(".chckrmvall_" + indextt).append(htmls);
+        //$("#maxlangthcount").val(length+1);
+
+
+        //$(".valuefordrpdown").keyup(function () {
+        //    var formate = $("#AdvanceSearchmodel_" + getlenght + "__AdvanceSearchKey").val();
+        //    switch (formate) {
+        //        case "Phone":
+        //        case "MainPhone":
+        //            $("#AdvanceSearchmodel_" + getlenght + "__AdvanceSearchValue").inputmask("(999)-999-9999");
+        //            break;
+        //        default:
+        //            $("#AdvanceSearchmodel_" + getlenght + "__AdvanceSearchValue").inputmask();
+        //            break;
+        //    }
+        //    var advancevalue = $("#AdvanceSearchmodel_" + getlenght + "__AdvanceSearchValue").val();
+        //    var KeyValue = formate.concat(advancevalue);
+        //});
+    };
+
+    //function dltadvnsbtnall() {
+    //    $(document).on('click', '#removeRows', function () {
+    //        $(this).closest('.addsearchitemall').remove();
+    //        var length = $('#Coall .addsearchitemall').length;
+    //        var maxlangth = $("#maxlangthcount").val();
+    //        if (length == 1) {
+    //            length = length - 1;
+    //            $(".chckrmvall_" + length).remove();
+    //            if (maxlangth == length) {
+    //                $("#rmvaddall_" + length).removeClass("hideclasall");
+    //            }
+    //        }
+
+    //    });
+    //};
+
+
+
+
+
+</script>
+
+<script>
+    $(".valuefordrpdwn").keyup(function () {
+        var formate = $(".selectvalue").val();
+        switch (formate) {
+            case "Phone":
+            case "MainPhone":
+                $(".mobileformate").inputmask("(999)-999-9999");
+                break;
+            default:
+                $(".mobileformate").inputmask();
+                break;
+        }
+    });
+</script>
+<script>
+    var data = $("#advncsrchmdlall").val();
+
+</script>
+<script>
+    jQuery(".clear-search-filterss").click(function () {
+        jQuery("#Filters").val("");
+        jQuery("#CarrierId").val("");
+        jQuery("#IndustryTypeId").val("");
+        jQuery("#AccountStatusId").val("");
+        jQuery("#AccountRepId").val("");
+        jQuery("#NextContactDate").val("");
+        jQuery("#AdvanceSearchmodel_0__AdvanceSearchKey").clearFields();
+        jQuery("#AdvanceSearchmodel_0__AdvanceSearchValue").clearFields();
+
+
+    });
+</script>
+
+<script>
+    //jQuery("#ClearAccountFilter").click(function () {
+    //    debugger;
+    //    jQuery("#Filters").val("");
+    //    jQuery("#CarrierId").val("");
+    //    jQuery("#IndustryTypeId").val("");
+    //    jQuery("#AccountStatusId").val("");
+    //    jQuery("#AccountRepId").val("");
+    //    jQuery("#NextContactDate").val("");
+    //    jQuery("input[name=AccountsWithSale]").attr('checked', false);
+    //    jQuery(".AdvanceSearchmodel_AdvanceSearchKey").val("");
+    //    jQuery(".AdvanceSearchmodel_AdvanceSearchValue").val("");
+    //    $("#applyfilter").trigger("click");
+
+
+    //});
+    $(document).ready(function () {
+        $("#ClearAccountFilter").click(function () {
+            $("#Filters").val("");
+            $("#CarrierId").val("");
+            $("#IndustryTypeId").val("");
+            $("#AccountStatusId").val("");
+            $("#AccountRepId").val("");
+            $("#NextContactDate").val("");
+            $("input[name=AccountsWithSale]").attr('checked', false);
+            $(".AdvanceSearchmodel_AdvanceSearchKey").val("");
+            $(".AdvanceSearchmodel_AdvanceSearchValue").val("");
+            $(".addsearchitemmainall").removeAttr();
+            $("#isresets").val(true);
+            $("#applyfilterall").trigger("click");
+
+        });
+        $(".advance-search-btn").click(function () {
+            //$("#AdvanceSearchValue").val(1);
+            $(".advance-search-all-from").show();
+        });
+        $("#isresets").val(false);
+
+
+    });
+    var advcsearchcount =  @Model.AdvanceSearchmodel.Count;
+    if (advcsearchcount >= 1) {
+        jQuery(".advance-search-all-from").slideDown("fast");
+            jQuery(".advance-search-block").hide();
+        var length = $('.addsearchitemmainall').length;
+            length = length - 1;
+        $(".rmvaddall_" + length).remove();
+        $("#rmvaddall_" + length).removeClass("hideclasall");
+        $(".chckrmvall_" + length).addClass("hideclasall");
+    }
+</script>
+<script>
+    $(window).on("load", function () {
+
+        var Isrequest = localStorage.getItem("AccountFilter");
+        if (Isrequest == "Accountfilter") {
+            location.reload();
+            localStorage.removeItem('AccountFilter');
+        }
+
+    });
+</script>

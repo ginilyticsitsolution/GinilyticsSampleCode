@@ -1,0 +1,285 @@
+﻿@inherits ActivityBase
+@page "/registration/activity"
+@using FinnlyS.Shared.Account
+@attribute [Authorize]
+
+<div class="row mb-2 bg-header header-text">Activities</div>
+
+<ErrorNotification @ref="ErrorNotificationRef" />
+@if (Loading)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row mt-2">
+        <TelerikGrid Data="@ObsActivityList" Pageable="true" PageSize="10" Sortable="true" FilterMode="Telerik.Blazor.GridFilterMode.None">
+            <GridToolBar>
+                <GridCommandButton OnClick="@CreateActivity" Icon="add">Add Activity</GridCommandButton>
+                <label class="text-secondary align-middle ml-3 mr-2">Activity Season:</label>
+                <TelerikComboBox Data="@ActivitySeasonList"
+                             TextField="Name"
+                             ValueField="SeasonId"
+                             @bind-Value="FilterActivitySeasonId"
+                             Placeholder="Filter By Activity Type..."
+                             OnChange="@FilterActivityTypeChanged"
+                             Width="15%" />
+                <label class="text-secondary align-middle ml-3 mr-2">Activity Type:</label>
+                <TelerikComboBox Data="@ActivityTypeList"
+                             TextField="Name"
+                             ValueField="ActivityTypeId"
+                             @bind-Value="FilterActivityTypeId"
+                             Placeholder="Filter By Activity Type..."
+                             OnChange="@FilterActivityTypeChanged"
+                             Width="15%" />
+                <label class="text-secondary align-middle ml-3">Date Range:</label>
+                <TelerikDatePicker @bind-Value="@FilterStartDate" OnChange="@FilterStartDateChanged" Class="ml-2" Width="12.4em" />
+                <label class="text-secondary align-middle ml-1">To</label>
+                <TelerikDatePicker @bind-Value="@FilterEndDate" OnChange="@FilterEndDateChanged" Class="ml-1" Width="12.4em" />
+                <GridSearchBox Class="ml-auto" />
+            </GridToolBar>
+            <GridColumns>
+                <GridColumn Field="Name" Title="Activity Name" />
+                <GridColumn Field="Code" Title="Code" Width="175px" />
+                <GridColumn Field="DisplayFacility" Title="Facility" />
+                <GridColumn Field="DisplayActivityType" Title="Type" />
+                <GridColumn Field="ActivityStartDate" Title="Start" DisplayFormat="{0:M/d/yyyy}" Width="100px" />
+                <GridColumn Field="ActivityEndDate" Title="End" DisplayFormat="{0:M/d/yyyy}" Width="100px" />
+                <GridCommandColumn Width="260px">
+                    <GridCommandButton Command="SessionEdit" OnClick="@CheckInSession" Icon="check" />
+                    <GridCommandButton OnClick="@InfoActivity" Icon="info-circle" />
+                    <GridCommandButton OnClick="@SellActivity" Icon="cart" />
+                    <GridCommandButton OnClick="@PromoteActivity" Icon="star" />
+                    @if (CanEdit)
+                    {
+                    <GridCommandButton OnClick="@EditActivity" Icon="pencil" />
+                    <GridCommandButton OnClick="@SetupActivityDelete" Icon="delete" />
+                    <GridCommandButton OnClick="@SetupActivityDuplicate" Icon="window-restore" />
+                    }
+            </GridCommandColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+    <TelerikWindow Modal="true" Size="@Telerik.Blazor.ThemeConstants.Window.Size.Large" Height="95%" Visible="@ShowEdit">
+        <WindowTitle>@Action Activity</WindowTitle>
+        <WindowActions>
+            <WindowAction Name="Close" OnClick="@(e => ShowEdit = false)" />
+        </WindowActions>
+        <WindowContent>
+            <ActivityDetail WorkingActivity="@WorkingActivity"
+                        AccrualEarnedOptionList="@AccrualEarnedOptionList"
+                        ActivityRegistrationTypeList="@ActivityRegistrationTypeList"
+                        ActivityAdditionalFeeTypeList="@ActivityAdditionalFeeTypeList"
+                        ActivityFeeTypeList="@ActivityFeeTypeList"
+                        ActivityDiscountTypeList="@ActivityDiscountTypeList"
+                        ActivityTypeList="@ActivityTypeList"
+                        ActivityGroupList="@ActivityGroupList"
+                        ActivitySeasonList="@ActivitySeasonList"
+                        GenderList="@GenderList"
+                        FeeList="@FeeList"
+                        ItemList="@ItemList"
+                        TaxLocationList="@TaxLocationList"
+                        FacilityList="@FacilityList"
+                        EventTypeList="@EventTypeList"
+                        ResidentTypeList="@ResidentTypeList"
+                        PaymentMethodList="@PaymentMethodList"
+                        SkillLevelList="@SkillLevelList"
+                        SkillMatchList="@SkillMatchList"
+                        SkillValueList="@SkillValueList"
+                        EditCompleted="@EditCompleted"
+                        DuplicateCompleted="@DuplicateCompleted" />
+        </WindowContent>
+    </TelerikWindow>
+
+    <TelerikWindow Modal="true" Size="@Telerik.Blazor.ThemeConstants.Window.Size.Large" Height="95%" Visible="@ShowSessionInfo">
+        <WindowTitle>Session Information</WindowTitle>
+        <WindowActions>
+            <WindowAction Name="Close" OnClick="@(e => ShowSessionInfo = false)" />
+        </WindowActions>
+        <WindowContent>
+            <Session WorkingActivity="@WorkingActivity"
+                 AccrualEarnedOptionList="@AccrualEarnedOptionList"
+                 ActivityRegistrationTypeList="@ActivityRegistrationTypeList"
+                 ActivityAdditionalFeeTypeList="@ActivityAdditionalFeeTypeList"
+                 ActivityFeeTypeList="@ActivityFeeTypeList"
+                 ActivityDiscountTypeList="@ActivityDiscountTypeList"
+                 ActivityTypeList="@ActivityTypeList"
+                 ActivityGroupList="@ActivityGroupList"
+                 GenderList="@GenderList"
+                 FeeList="@FeeList"
+                 ItemList="@ItemList"
+                 FacilityList="@FacilityList"
+                 EventTypeList="@EventTypeList"
+                 ResidentTypeList="@ResidentTypeList"
+                 PaymentMethodList="@PaymentMethodList"
+                 LoadActivityData="true"
+                 ShowHeader="true"
+                 SessionCompleted="@SessionCompleted" />
+        </WindowContent>
+    </TelerikWindow>
+
+    <TelerikWindow Modal="true" Size="@Telerik.Blazor.ThemeConstants.Window.Size.Medium" Visible="@ShowDeleteConfirm">
+        <WindowTitle>Confirm Delete</WindowTitle>
+        <WindowActions>
+            <WindowAction Name="Close" OnClick="@(e => ShowDeleteConfirm = false)" />
+        </WindowActions>
+        <WindowContent>
+            <div class="form-group">
+                Delete @DeleteActivityItem.Name?
+            </div>
+            <div class="form-group">
+                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@DeleteActivity">Yes</TelerikButton>
+                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Secondary" OnClick="@(e => ShowDeleteConfirm = false)">No</TelerikButton>
+            </div>
+        </WindowContent>
+    </TelerikWindow>
+
+    <TelerikWindow Modal="true" Width="75%" Height="95%" Visible="@ShowSell">
+        <WindowTitle>Sell Activity</WindowTitle>
+        <WindowActions>
+            <WindowAction Name="Close" OnClick="@(e => ShowSell = false)" />
+        </WindowActions>
+        <WindowContent>
+            <Register WorkingActivity="@WorkingActivity"
+                  RegistrationList="@RegistrationList"
+                  GuestAddress="@GuestAddress"
+                  ActivityFeeTypeList="@ActivityFeeTypeList"
+                  ActivityAdditionalFeeTypeList="@ActivityAdditionalFeeTypeList"
+                  FeeList="@FeeList"
+                  ItemList="@ItemList"
+                  TaxLocationList="@TaxLocationList"
+                  PaymentMethodList="@PaymentMethodList"
+                  SkillLevelList="@SkillLevelList"
+                  SkillMatchList="@SkillMatchList"
+                  SkillValueList="@SkillValueList"
+                  RegistrationCompleted="@RegistrationCompleted" />
+        </WindowContent>
+    </TelerikWindow>
+
+    <TelerikWindow Modal="true" Width="75%" Height="95%" Visible="@ShowPromote">
+        <WindowTitle>Promote Registrants</WindowTitle>
+        <WindowActions>
+            <WindowAction Name="Close" OnClick="@(e => ShowPromote = false)" />
+        </WindowActions>
+        <WindowContent>
+            <ActivityPromote WorkingActivity="@WorkingActivity"
+                         SkillLevelList="@SkillLevelList"
+                         SkillValueList="@SkillValueList"
+                         PromoteCompleted="@PromoteCompleted" />
+        </WindowContent>
+    </TelerikWindow>
+
+    <TelerikWindow Modal="true" Size="@Telerik.Blazor.ThemeConstants.Window.Size.Large" Visible="@ShowCheckin" Height="75%">
+        <WindowTitle>Check In @WorkingActivity.Name</WindowTitle>
+        <WindowActions>
+            <WindowAction Name="Close" OnClick="@(e => ShowCheckin = false)" />
+        </WindowActions>
+        <WindowContent>
+            <CheckIn WorkingActivity="@WorkingActivity"
+                 WorkingSession="null" />
+        </WindowContent>
+    </TelerikWindow>
+
+    <TelerikWindow Modal="true" Size="@Telerik.Blazor.ThemeConstants.Window.Size.Medium" Visible="@ShowDuplicate">
+        <WindowTitle>Confirm Duplicate Acivity</WindowTitle>
+        <WindowActions>
+            <WindowAction Name="Close" OnClick="@(e => ShowDuplicate = false)" />
+        </WindowActions>
+        <WindowContent>
+            <div class="form-group">
+                Copy @DuplicateActivityItem.Name?
+            </div>
+            <div class="form-group">
+                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@DuplicateActivity">Yes</TelerikButton>
+                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Secondary" OnClick="@(e => ShowDuplicate = false)">No</TelerikButton>
+            </div>
+        </WindowContent>
+    </TelerikWindow>
+    <TelerikLoaderContainer OverlayThemeColor="Dark" Visible="@ShowDuplicateMessage"
+                        Text="Please Wait... We are copying activity"></TelerikLoaderContainer>
+
+    <TelerikWindow Modal="true" Size="@Telerik.Blazor.ThemeConstants.Window.Size.Large" Visible="@ShowActivityConflicts" Height="75%">
+        <WindowTitle>Recurring Results</WindowTitle>
+        <WindowActions>
+            <WindowAction Name="Close" OnClick="@(e => ShowActivityConflicts = false)" />
+        </WindowActions>
+        <WindowContent>
+            <div class="row no-gutters">
+                <label class="text-secondary">The following events conflict with the attempted set up.</label>
+            </div>
+            <div class="form-group">
+                <TelerikGrid Data="@RecurringConflictList" Pageable="true" PageSize="10" Sortable="true" FilterMode="Telerik.Blazor.GridFilterMode.None">
+                    <GridColumns>
+                        <GridColumn Field="SourceEvent.DisplayFacilityName" Title="Session Facility" />
+                        <GridColumn Field="SourceEvent.EventStartTime" Title="Session Start" DisplayFormat="{0:M/d/yyyy h:mm tt}" Width="175px" />
+                        <GridColumn Field="SourceEvent.EventEndTime" Title="Session End" DisplayFormat="{0:M/d/yyyy h:mm tt}" Width="175px" />
+                        <GridColumn Field="ConflictEvent.EventStartTime" Title="Conflict Start" DisplayFormat="{0:M/d/yyyy h:mm tt}" Width="175px" />
+                        <GridColumn Field="ConflictEvent.EventEndTime" Title="Conflict End" DisplayFormat="{0:M/d/yyyy h:mm tt}" Width="175px" />
+                        <GridColumn Field="ConflictEvent.DisplayFacilityName" Title="Conflict Facility" />
+                    </GridColumns>
+                </TelerikGrid>
+            </div>
+            <div class="form-group">
+                <TelerikButton OnClick="@(e => ShowActivityConflicts = false)">OK</TelerikButton>
+            </div>
+        </WindowContent>
+    </TelerikWindow>
+
+    @*Todo Session Event popup *@
+    <TelerikWindow Modal="true" Size="@Telerik.Blazor.ThemeConstants.Window.Size.Medium" Visible="@SelectSessionWeek">
+        <WindowTitle>Copy Activity</WindowTitle>
+        <WindowActions>
+            <WindowAction Name="Close" OnClick="@(e => SelectSessionWeek = false)" />
+        </WindowActions>
+        <WindowContent>
+            <div class="form-group">
+                <label style="width:45%; height:auto; font-weight:600;">Your Current Activity Session Started :</label>
+                @*<TelerikGrid Data="@getSessionDateList">
+                    <GridColumns>
+                    <GridColumn Field="SessionStartDate" Title="Start Date" DisplayFormat="{0:M/d/yyyy}" />
+                    <GridColumn Field="SessionEndDate" Title="End Date" DisplayFormat="{0:M/d/yyyy}" />
+                    </GridColumns>
+                    </TelerikGrid>*@
+                <div class="d-flex">
+                    <div class="row w-100">
+                        <div class="col-lg-6">
+                            <label style="font-weight:600;">Start Activity</label>
+                            <div>
+                                <label>@ActivityStartDate</label>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label style="font-weight:600;">End Activity</label>
+                            <div>
+                                <label>@ActivityEndDate</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                    </div>
+                </div>
+                <div style="text-align:left; margin-top:10px;" class="row w-100">
+                    <div class="col-lg-6">
+                        <label height:auto;" style="font-weight:600;">Move Newly Copied Activity Session In Week:</label>
+
+                    </div>
+                    <div class="col-lg-6">
+                        <TelerikDropDownList Data="@myDdlData"
+                                         TextField="MyTextField"
+                                         ValueField="MyValueField"
+                                         @bind-Value="@DdlValue"
+                                         DefaultText="Select Week"
+                                         Width="40%">
+                        </TelerikDropDownList>
+                    </div>
+                    <div class="col-lg-12 text-end">
+                        <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GetSelectedSessionWeek">Submit</TelerikButton>
+
+                    </div>
+                </div>
+            </div>
+        </WindowContent>
+    </TelerikWindow>
+}
