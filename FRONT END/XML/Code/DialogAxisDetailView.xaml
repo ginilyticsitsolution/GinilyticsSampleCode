@@ -1,0 +1,1280 @@
+﻿<UserControl x:Class="Flyhouse.UI.Dialogs.View.DialogAxisDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Flyhouse.UI.Dialogs.View"
+             xmlns:controls="clr-namespace:Flyhouse.Controls"
+             xmlns:conv="clr-namespace:Flyhouse.Converters"
+             xmlns:behavior="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:fb="clr-namespace:Flyhouse.Behaviors"
+             xmlns:global="clr-namespace:Flyhouse.Globals"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib" Unloaded="UserControl_Unloaded"
+             mc:Ignorable="d" 
+             Background="Transparent"
+             d:DesignHeight="1500" d:DesignWidth="1050"
+             Style="{DynamicResource CustomUserControlStyle}">
+
+    <UserControl.Resources>
+        <sys:Double x:Key="TitleWidth">250</sys:Double>
+        <sys:Double x:Key="ValueWidth">215</sys:Double>
+
+        <conv:MathConverter x:Key="AdditionConverter" Min="0" Operation="Add" />
+        <conv:AxisStatusConverter x:Key="AxisStatusConverter"/>
+
+        <conv:MetricLabelConverter x:Key="MetricLabelConverter" ImperialValue="(ft/s)" MetricValue="(mm/s)"/>
+        <conv:MetricLabelConverter x:Key="MetricLabelConverter2" ImperialValue="(ft/s²)" MetricValue="(mm/s²)"/>
+        <conv:MetricLabelConverter x:Key="MetricLabelConverter3" ImperialValue="(ft)" MetricValue="(mm)"/>
+        <conv:LoadLabelConverter x:Key="MetricLabelLoad" LoadInKg="(kg)" LoadInLBS="(lbs)"/>
+
+        
+        <conv:DynamicValueConverter x:Key="LimitTextConverter"
+                                    FalseValue="OK"
+                                    TrueValue="LIMIT" />
+        <conv:DynamicValueConverter x:Key="EnabledDisabledTextConverter"
+                                    FalseValue="DISABLED"
+                                    TrueValue="ENABLED" />
+        <conv:DynamicValueConverter x:Key="EngagedDisengagedTextConverter"
+                                    FalseValue="DISENGAGED"
+                                    TrueValue="ENGAGED" />
+        <conv:DynamicValueConverter x:Key="BrakeControlConverter"
+                                    FalseValue="NO CONTROL"
+                                    TrueValue="BRAKE CONTROL" />
+
+        <Style x:Key="TitleLabelStyle"
+               BasedOn="{StaticResource LabelStyle}"
+               TargetType="Label">
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Right" />
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+            <Setter Property="Margin"
+                    Value="0,0,20,0" />
+            <Setter Property="Width"
+                    Value="{StaticResource TitleWidth}" />
+        </Style>
+
+        <Style x:Key="ValueLabelStyle"
+               BasedOn="{StaticResource LabelStyle}"
+               TargetType="Label">
+            <Setter Property="HorizontalAlignment"
+                    Value="Left" />
+            <Setter Property="Width"
+                    Value="{StaticResource ValueWidth}" />
+        </Style>
+
+        <Style BasedOn="{StaticResource ButtonStyle}"
+               TargetType="Button">
+            <Setter Property="Margin"
+                    Value="0,10" />
+        </Style>
+
+        <Style x:Key="ValueComboBoxStyle"
+               BasedOn="{StaticResource ComboBoxStyle}"
+               TargetType="ComboBox">
+            <Setter Property="HorizontalAlignment"
+                    Value="Left" />
+            <Setter Property="Width"
+                    Value="{StaticResource ValueWidth}" />
+            <Setter Property="Margin"
+                    Value="0,5" />
+        </Style>
+
+        <Style x:Key="ValueCheckBoxStyle"
+               BasedOn="{StaticResource CheckBoxStyle}"
+               TargetType="CheckBox">
+            <Setter Property="HorizontalAlignment"
+                    Value="Left" />
+            <Setter Property="Margin"
+                    Value="0,5" />
+        </Style>
+        <!--<Style x:Key="UserControlStyle1" TargetType="{x:Type UserControl}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type UserControl}">
+                        <Border CornerRadius="10" Padding="15"   Background="{StaticResource FiordBrush}" >
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>-->
+        <BorderGapMaskConverter x:Key="BorderGapMaskConverter"/>
+        <Style x:Key="GroupBoxStyle1" TargetType="{x:Type GroupBox}">
+            <Setter Property="BorderBrush" Value="#D5DFE5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type GroupBox}">
+                        <Grid SnapsToDevicePixels="true">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="6"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="6"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="6"/>
+                            </Grid.RowDefinitions>
+                            <Border BorderBrush="Transparent" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.ColumnSpan="4" Grid.Column="0" CornerRadius="4" Grid.Row="1" Grid.RowSpan="3"/>
+                            <Border BorderBrush="Transparent" BorderThickness="{TemplateBinding BorderThickness}" Grid.ColumnSpan="4" CornerRadius="4" Grid.Row="1" Grid.RowSpan="3">
+                                <Border.OpacityMask>
+                                    <MultiBinding ConverterParameter="7" Converter="{StaticResource BorderGapMaskConverter}">
+                                        <Binding ElementName="Header" Path="ActualWidth"/>
+                                        <Binding Path="ActualWidth" RelativeSource="{RelativeSource Self}"/>
+                                        <Binding Path="ActualHeight" RelativeSource="{RelativeSource Self}"/>
+                                    </MultiBinding>
+                                </Border.OpacityMask>
+                                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
+                                    <Border BorderBrush="Transparent" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2"/>
+                                </Border>
+                            </Border>
+                            <Border x:Name="Header" Grid.Column="1" Padding="3,1,3,0" Grid.Row="0" Grid.RowSpan="2">
+                                <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </Border>
+                            <ContentPresenter Grid.ColumnSpan="2" Grid.Column="1" Margin="{TemplateBinding Padding}" Grid.Row="2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CategoryLabelStyle"
+                       BasedOn="{StaticResource LabelStyle}"
+                       TargetType="Label">
+            <Setter Property="Foreground"
+                            Value="{StaticResource HeatherBrush}" />
+            <Setter Property="FontFamily"
+                            Value="{StaticResource AppHeaderFont}" />
+            <Setter Property="FontStyle"
+                            Value="Italic" />
+            <Setter Property="FontWeight"
+                            Value="Bold" />
+            <Setter Property="FontSize"
+                            Value="20" />
+            <Setter Property="HorizontalAlignment"
+                            Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Border x:Name="newUserbdr" Style="{StaticResource MainBorder}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xf3f2;" FontFamily="{StaticResource  Font_Awesome_5_Pro_Solid_900}" Style="{StaticResource HeaderIconTextBlockStyle}">
+                        </TextBlock>
+                        <TextBlock Text="Axis Setting" Style="{StaticResource HeaderTextBlockStyle}"></TextBlock>
+                    </StackPanel>
+                    <Border Height="1" HorizontalAlignment="Stretch" BorderBrush="{DynamicResource GrayishblueBrush}" BorderThickness="1" Margin="0,10"/>
+                </StackPanel>
+
+                <ScrollViewer  Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Vertical">
+                            <Grid  VerticalAlignment="Stretch" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <GroupBox BorderBrush="#7F9CA9" Grid.Row="0" Margin="3,0,10,0"  VerticalAlignment="Top" BorderThickness="1" Background="{StaticResource FiordBrush}" Style="{DynamicResource GroupBoxStyle1}">
+                                    <GroupBox.Header >
+                                        <Label   Style="{StaticResource CategoryLabelStyle}" >
+                                            <Label.Content>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xf05a;" Foreground="{StaticResource GrayishblueBrush}" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="45"></TextBlock>
+                                                    <TextBlock Text="Axis Status" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="30" FontFamily="{StaticResource DinCondensed_Normal}" ></TextBlock>
+                                                </StackPanel>
+                                            </Label.Content>
+                                        </Label>
+                                    </GroupBox.Header>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <StackPanel  Grid.Column="0"  Orientation="Vertical" Margin="3,0,3,0" >
+                                            <Label Content="Active" FontSize="24" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Grid Margin="0,0,0,0"  HorizontalAlignment="Center" VerticalAlignment="Top" Width="210" Height="42"  >
+                                                <ComboBox ItemsSource="{Binding Path=EnableItems,Mode=OneWay}" SelectedValuePath="Value"
+                                          SelectedValue="{Binding Path=AxisVM.IsActive, Mode=TwoWay}"  Background="{StaticResource TaraweraBrush}"  x:Name="cmbAxisStatusActive">
+                                                    <ComboBox.Style>
+                                                        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                                                            <Setter Property="IsEnabled" Value="True"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Path=IsAdmin, Mode=OneWay}" Value="False">
+                                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                                </DataTrigger>
+
+                                                                <DataTrigger Binding="{Binding Path=AxisVM.Offline, Mode=OneWay}" Value="True">
+                                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ComboBox.Style>
+                                                    <ComboBox.ItemContainerStyle>
+                                                        <Style TargetType="ComboBoxItem">
+                                                            <Setter Property="Background" Value="{StaticResource FiordBrush}"></Setter>
+                                                            <Setter Property="Foreground" Value="{StaticResource AppThemeBrush}"></Setter>
+                                                            <Setter Property="Height" Value="40"></Setter>
+                                                            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+                                                        </Style>
+                                                    </ComboBox.ItemContainerStyle>
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Rectangle Fill="{Binding Color, Mode=OneWay}" Height="20" Width="5" RadiusX="2" RadiusY="2"></Rectangle>
+                                                                <TextBlock Margin="4,0,0,0" Text="{Binding Path=Text, Mode=OneWay}"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <TextBlock  Visibility="{Binding SelectedItem, ElementName=cmbAxisStatusActive, Converter={StaticResource NullToVisibilityConverter}}" VerticalAlignment="Center"
+                 IsHitTestVisible="False" Foreground="{StaticResource AppThemeBrush}" FontFamily="{StaticResource DinCondensed_Light}" FontSize="22"
+                 Text="Please Choose..." Margin="10,0,0,0" />
+                                            </Grid>
+                                            <Label Content="Axis Number" Visibility="Collapsed" FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <TextBox TextAlignment="Left" Visibility="Collapsed" VerticalContentAlignment="Center" HorizontalAlignment="Left" FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }"  Foreground="{StaticResource HeatherBrush}" Margin="15,0,0,0"  Height="43" 
+                                         Style="{StaticResource NewTextBoxStyle}"  
+                                         Text="{Binding AxisVM.AxisNumber,
+                                                        Mode=TwoWay,
+                                                        UpdateSourceTrigger=PropertyChanged}" />
+                                            <Label Content="Axis Name" FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <TextBox TextAlignment="Left" IsReadOnly="True" VerticalContentAlignment="Center" Style="{StaticResource NewTextBoxStyle}" FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }"  Foreground="{StaticResource HeatherBrush}"  MaxLength="16" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                         Text="{Binding AxisVM.AxisName,
+                                                        Mode=TwoWay,
+                                                        UpdateSourceTrigger=PropertyChanged}" />
+
+                                            <Label Content="Display Name" FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <TextBox  IsReadOnly="{Binding Path=IsAdmin, Mode=OneWay, Converter={StaticResource NegateConverter}}" VerticalContentAlignment="Center" Style="{StaticResource NewTextBoxStyle}" MaxLength="50" TextAlignment="Right"
+                                              HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43" FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                         Text="{Binding AxisVM.DisplayName,
+                                                        Mode=TwoWay,
+                                                        UpdateSourceTrigger=PropertyChanged}" GotFocus="AlphaTextBox_GotFocus" LostFocus="TextBox_LostFocus"/>
+
+                                            <Label Content="Encoder"  Visibility="Collapsed" FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Grid  Visibility="Collapsed">
+                                                <TextBox TextAlignment="Right" IsReadOnly="True" VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43" FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }"  Foreground="{StaticResource HeatherBrush}">
+                                                    <TextBox.Style>
+                                                        <Style TargetType="TextBox" BasedOn="{StaticResource NewTextBoxStyle}">
+                                                            <Setter Property="Text" Value="{Binding AxisVM.EncoderPosition, StringFormat=F0, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Path=AxisVM.Offline, Mode=OneWay}" Value="True">
+                                                                    <Setter Property="Text" Value="Offline"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBox.Style>
+                                                </TextBox>
+                                                <!--<TextBlock Margin="10" TextAlignment="Right" Text="Offline" FontSize="22" FontFamily="{StaticResource DinCondensed_Bold}" Foreground="{StaticResource OfflineBrush}" Visibility="{Binding Path=AxisVM.Offline, Converter={StaticResource BooleanToVisibilityConverter}}"/>-->
+                                            </Grid>
+
+
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Vertical">
+                                            <Label Content="Status" FontSize="24" HorizontalAlignment="Left" Margin="15,0,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBox TextAlignment="Left" IsReadOnly="True" VerticalContentAlignment="Center" HorizontalAlignment="Left" FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }"  Foreground="{StaticResource HeatherBrush}" Margin="15,0,0,0"  Height="43" 
+                                         Style="{StaticResource NewTextBoxStyle}"  HorizontalContentAlignment="Stretch"  Width="190"
+                                         Text="{Binding AxisVM,
+                                                        Mode=OneWay, Converter={StaticResource AxisStatusConverter}, ConverterParameter=status}" />
+
+
+                                                <Button Style="{StaticResource TransparentButton}" Grid.Column="1" Padding="5,0,20,0" Command="{Binding AxisStatusCommand}">
+                                                    <TextBlock Foreground="White" FontSize="18" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" Text="{StaticResource IconInfoCircle}"></TextBlock>
+                                                </Button>
+                                            </Grid>
+
+
+                                            <Label Content="IP" FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!---->
+                                                <TextBox TextDecorations="Underline" Cursor="Hand" MouseDoubleClick="TextBox_MouseDoubleClick" TextChanged="TextBox_TextChanged"   HorizontalContentAlignment="Stretch"  Width="190"  VerticalContentAlignment="Center" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43" FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" Foreground="{StaticResource AquamarineBrush}"
+                                                    Text="{Binding AxisVM.NetworkIPAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
+                                                </TextBox>
+
+                                                <Button Grid.Column="1" Padding="5,0,20,0" Command="{Binding IpAddressCommand}">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource TransparentButton}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HasValidURI}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <!--<Setter Property="Foreground" Value="#FF2A6DCD"/>-->
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                    <Button.Content>
+                                                        <TextBlock Foreground="White" FontSize="18" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" Text="{StaticResource IconInfoCircle}"></TextBlock>
+                                                    </Button.Content>
+                                                </Button>
+                                            </Grid>
+
+
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Position"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter3}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <Grid>
+                                                <TextBox TextAlignment="Right" GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus" VerticalContentAlignment="Center"  
+                                              HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43" FontSize="22" FontFamily="{StaticResource DinCondensed_Bold}">
+                                                    <TextBox.Style>
+                                                        <Style TargetType="TextBox" BasedOn="{StaticResource ReadonlyTextBoxStyle}">
+                                                            <Setter Property="Text" Value="{Binding AxisVM.CurrentPosition, StringFormat=F0, Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}"/>
+                                                            <Setter Property="IsReadOnly" Value="True"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Path=AxisVM.Offline, Mode=OneWay}" Value="True">
+                                                                    <Setter Property="Text" Value="Offline"/>
+                                                                    <Setter Property="IsReadOnly" Value="True"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Path=IsAdmin, Mode=OneWay}" Value="True">
+                                                                    <Setter Property="IsReadOnly" Value="False"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBox.Style>
+                                                </TextBox>
+                                                <!--<TextBlock  Margin="10"  TextAlignment="Right" Text="Offline" FontSize="22" FontFamily="{StaticResource DinCondensed_Bold}" Foreground="{StaticResource OfflineBrush}" Visibility="{Binding Path=AxisVM.Offline, Converter={StaticResource BooleanToVisibilityConverter}}"/>-->
+                                            </Grid>
+                                           
+                                        </StackPanel>
+
+                                        <Grid Grid.Row="1" Grid.ColumnSpan="2">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <Label Content="Limits" Grid.Row="0" FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Label Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Margin="15,0,0,0"
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                                <Label.Content>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="&#xf0c8;" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="30">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.UltimateLimit}" Value="{x:Null}">
+                                                                            <Setter Property="Foreground" Value="{StaticResource TaraweraBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.UltimateLimit}" Value="False">
+                                                                            <Setter Property="Foreground" Value="{StaticResource YellowGreenBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.UltimateLimit}" Value="True">
+                                                                            <Setter Property="Foreground" Value="{StaticResource CrimsonBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.Offline}" Value="True">
+                                                                            <Setter Property="Foreground" Value="{StaticResource TaraweraBrush}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock Text="Ultimate Limit" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="20" FontFamily="{StaticResource DinCondensed_Normal}"  Foreground="{StaticResource HeatherBrush}" ></TextBlock>
+                                                    </StackPanel>
+                                                </Label.Content>
+                                            </Label>
+                                            <Label Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Margin="5,0,0,0"
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                                <Label.Content>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="&#xf0c8;" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="30">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.HardUpLimit}" Value="False">
+                                                                            <Setter Property="Foreground" Value="{StaticResource YellowGreenBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.HardUpLimit}" Value="{x:Null}">
+                                                                            <Setter Property="Foreground" Value="{StaticResource TaraweraBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.HardUpLimit}" Value="True">
+                                                                            <Setter Property="Foreground" Value="{StaticResource CrimsonBrush}"/>
+                                                                        </DataTrigger>
+
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.Offline}" Value="True">
+                                                                            <Setter Property="Foreground" Value="{StaticResource TaraweraBrush}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock Text="Hard Plus Limit" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="20" FontFamily="{StaticResource DinCondensed_Normal}"  Foreground="{StaticResource HeatherBrush}" ></TextBlock>
+                                                    </StackPanel>
+                                                </Label.Content>
+                                            </Label>
+                                            <Label Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" Margin="5,0,0,0"
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                                <Label.Content>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="&#xf0c8;" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="30">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.HardDownLimit}" Value="False">
+                                                                            <Setter Property="Foreground" Value="{StaticResource YellowGreenBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.HardDownLimit}" Value="{x:Null}">
+                                                                            <Setter Property="Foreground" Value="{StaticResource TaraweraBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.HardDownLimit}" Value="True">
+                                                                            <Setter Property="Foreground" Value="{StaticResource CrimsonBrush}"/>
+                                                                        </DataTrigger>
+
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.Offline}" Value="True">
+                                                                            <Setter Property="Foreground" Value="{StaticResource TaraweraBrush}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock Text="Hard Minus Limit" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="20" FontFamily="{StaticResource DinCondensed_Normal}"  Foreground="{StaticResource HeatherBrush}" ></TextBlock>
+                                                    </StackPanel>
+                                                </Label.Content>
+                                            </Label>
+                                            <Label Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" Margin="15,0,0,0"
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                                <Label.Content>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="&#xf0c8;" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="30">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.SlackLine}" Value="{x:Null}">
+                                                                            <Setter Property="Foreground" Value="{StaticResource TaraweraBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.SlackLine}" Value="false">
+                                                                            <Setter Property="Foreground" Value="{StaticResource YellowGreenBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.SlackLine}" Value="true">
+                                                                            <Setter Property="Foreground" Value="{StaticResource CrimsonBrush}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.Offline}" Value="True">
+                                                                            <Setter Property="Foreground" Value="{StaticResource TaraweraBrush}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock Text="Slack Line" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="20" FontFamily="{StaticResource DinCondensed_Normal}"  Foreground="{StaticResource HeatherBrush}" ></TextBlock>
+                                                    </StackPanel>
+                                                </Label.Content>
+                                            </Label>
+
+                                            <Label Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Grid.ColumnSpan="2" Margin="5,0,0,0" Style="{StaticResource CategoryLabelStyle}" >
+                                                <Label.Content>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Button Command="{Binding ConditionalRelationship}" >
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.AxisConditionalStatus}" Value="2">
+                                                                            <Setter Property="IsEnabled" Value="True"/>
+                                                                        </DataTrigger> 
+                                                                        <DataTrigger Binding="{Binding Path=AxisVM.AxisConditionalStatus}" Value="0">
+                                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                            <Button.Template>
+                                                                <ControlTemplate TargetType="{x:Type Button}">
+                                                                <TextBlock Text="&#xf0c8;" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="30">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding Path=AxisVM.AxisConditionalStatus}" Value="0">
+                                                                                    <Setter Property="Foreground" Value="{StaticResource TaraweraBrush}"/>
+                                                                                </DataTrigger>
+                                                                                <DataTrigger Binding="{Binding Path=AxisVM.AxisConditionalStatus}" Value="1">
+                                                                                    <Setter Property="Foreground" Value="{StaticResource YellowGreenBrush}"/>
+                                                                                </DataTrigger>
+                                                                                <DataTrigger Binding="{Binding Path=AxisVM.AxisConditionalStatus}" Value="2">
+                                                                                    <Setter Property="Foreground" Value="{StaticResource CrimsonBrush}"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                                </ControlTemplate>
+                                                            </Button.Template>
+                                                        </Button>
+                                                        <TextBlock Text="Conditional Relationship" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="20" FontFamily="{StaticResource DinCondensed_Normal}"  Foreground="{StaticResource HeatherBrush}" ></TextBlock>
+                                                    </StackPanel>
+                                                </Label.Content>
+                                            </Label>
+                                        </Grid>
+                                    </Grid>
+                                </GroupBox>
+                                <GroupBox BorderBrush="#7F9CA9" Grid.Row="1" Margin="3,30,10,0" BorderThickness="1" Background="{StaticResource FiordBrush}" Style="{DynamicResource GroupBoxStyle1}">
+                                    <GroupBox.Header >
+                                        <Label 
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                            <Label.Content>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xf5cd;" Foreground="{StaticResource GrayishblueBrush}" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="45"></TextBlock>
+                                                    <TextBlock Text="Load" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="30" FontFamily="{StaticResource DinCondensed_Normal}" ></TextBlock>
+                                                </StackPanel>
+                                            </Label.Content>
+                                        </Label>
+                                    </GroupBox.Header>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0"  Orientation="Vertical" Margin="3,0,3,0" >
+                                            <Label Content="Active" FontSize="24" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Grid Margin="0,0,0,0"  HorizontalAlignment="Center" VerticalAlignment="Top" Width="210" Height="42"  >
+                                                <ComboBox VerticalContentAlignment="Center" SelectedValuePath="Value" ItemsSource="{Binding Path=EnableItems, Mode=OneWay}"
+                                           SelectedValue="{Binding Path=AxisVM.LoadCell, Mode=TwoWay}" Background="{StaticResource TaraweraBrush}" x:Name="cmbLoadActive">
+                                                    <ComboBox.ItemContainerStyle>
+                                                        <Style TargetType="ComboBoxItem">
+                                                            <Setter Property="Background" Value="{StaticResource FiordBrush}"></Setter>
+                                                            <Setter Property="Foreground" Value="{StaticResource AppThemeBrush}"></Setter>
+                                                            <Setter Property="Height" Value="40"></Setter>
+                                                            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+                                                        </Style>
+                                                    </ComboBox.ItemContainerStyle>
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Rectangle Fill="{Binding Color, Mode=OneWay}" Height="20" Width="5" RadiusX="2" RadiusY="2"></Rectangle>
+                                                                <TextBlock Margin="4,0,0,0" Text="{Binding Path=Text, Mode=OneWay}"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <TextBlock  Visibility="{Binding SelectedItem, ElementName=cmbLoadActive, Converter={StaticResource NullToVisibilityConverter}}" VerticalAlignment="Center"
+                 IsHitTestVisible="False" Foreground="{StaticResource AppThemeBrush}" FontFamily="{StaticResource DinCondensed_Light}" FontSize="22"
+                 Text="Please Choose..." Margin="10,0,0,0" />
+                                            </Grid>
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Actual"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelLoad}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <Grid>
+                                                <TextBox  TextAlignment="Left" IsReadOnly="True" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43" FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }"  Foreground="{StaticResource HeatherBrush}">
+                                                    <TextBox.Style>
+                                                        <Style TargetType="TextBox" BasedOn="{StaticResource NewTextBoxStyle}">
+                                                            <Setter Property="Text" Value="{Binding AxisVM.MotorLoadCell, Mode=TwoWay, StringFormat={}{0:0.##} ,
+                                                    UpdateSourceTrigger=LostFocus, Converter={StaticResource MetricLoadConverter}}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Path=AxisVM.Offline, Mode=OneWay}" Value="True">
+                                                                    <Setter Property="Text" Value="Offline"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBox.Style>
+                                                </TextBox>
+                                            </Grid>
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Limit"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelLoad}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox  TextAlignment="Right"  Style="{StaticResource NewTextBoxStyle}" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold}" 
+                                     Text="{Binding AxisVM.MotorLoadCellLimit, Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricLoadConverter}}"  GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+                                                <behavior:Interaction.Behaviors>
+                                                    <fb:TextBoxInputBehavior  />
+                                                    
+                                                </behavior:Interaction.Behaviors>
+                                            </TextBox>
+
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Secondary Load Cell"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelLoad}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <Grid>
+                                                <TextBox  TextAlignment="Left" IsReadOnly="True" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43" FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }"  Foreground="{StaticResource HeatherBrush}">
+                                                    <TextBox.Style>
+                                                        <Style TargetType="TextBox" BasedOn="{StaticResource NewTextBoxStyle}">
+                                                            <Setter Property="Text" Value="{Binding AxisVM.SecondaryMotorLoadCell, Mode=TwoWay, StringFormat={}{0:0.##} ,
+                                                    UpdateSourceTrigger=LostFocus, Converter={StaticResource MetricLoadConverter}}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Path=AxisVM.Offline, Mode=OneWay}" Value="True">
+                                                                    <Setter Property="Text" Value="Offline"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBox.Style>
+                                                </TextBox>
+                                            </Grid>
+
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Vertical">
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left"  Margin="15,5,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Max Load"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelLoad}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox  TextAlignment="Left"   HorizontalAlignment="Left" Margin="15,10,0,0"  Height="43" FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }"  
+                                     Text="{Binding AxisVM.MaxWeight, StringFormat=F0, Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricLoadConverter}}">
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox" BasedOn="{StaticResource ReadonlyTextBoxStyle}">
+                                                        <Setter Property="IsReadOnly" Value="True"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Path=IsFlyhouse, Mode=OneWay}" Value="True">
+                                                                <Setter Property="IsReadOnly" Value="False"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,0,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Warning"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelLoad}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox  TextAlignment="Right"  Style="{StaticResource NewTextBoxStyle}" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                     Text="{Binding AxisVM.MotorLoadCellWarning,  Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricLoadConverter}}" GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+                                                <!--<behavior:Interaction.Behaviors>
+                                                    --><!--<fb:TextBoxInputBehavior DataType="Decimal" Max="{Binding Path=AxisVM.MotorLoadCellLimit, Mode=OneWay}"/>--><!--
+                                                    <fb:TextBoxInputBehavior  DataType="Decimal" Max="100"/>
+                                                </behavior:Interaction.Behaviors>-->
+                                            </TextBox>
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="LoadDelay"/>
+                                                    <Run Text="(s)"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox  TextAlignment="Right"  Style="{StaticResource NewTextBoxStyle}" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                     Text="{Binding AxisVM.LoadDealy,  Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,StringFormat=F1}" GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+                                                <behavior:Interaction.Behaviors>
+                                                    <fb:TextBoxInputBehavior  DataType="Decimal" Max="99.9"/>
+                                                </behavior:Interaction.Behaviors>
+                                            </TextBox>
+                                        </StackPanel>
+                                    </Grid>
+
+                                </GroupBox>
+                                <GroupBox BorderBrush="#7F9CA9" Grid.Row="2" Margin="3,30,10,0" BorderThickness="1" Background="{StaticResource FiordBrush}" Style="{DynamicResource GroupBoxStyle1}">
+                                    <GroupBox.Header >
+                                        <Label 
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                            <Label.Content>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xf77e;" Foreground="{StaticResource GrayishblueBrush}" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="45"></TextBlock>
+                                                    <TextBlock Text="Group" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="30" FontFamily="{StaticResource DinCondensed_Normal}" ></TextBlock>
+                                                </StackPanel>
+                                            </Label.Content>
+                                        </Label>
+                                    </GroupBox.Header>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Grid.Column="0"  Orientation="Vertical" Margin="3,0,3,0" >
+                                            <Label Content="Group:" FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Label  HorizontalAlignment="Left" Margin="50,0,0,0"
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                                <Label.Content>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock FontSize="30">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="&#xf04d;"/>
+                                                                    <Setter Property="Foreground" Value="{StaticResource BlackPearlBrush}"/>
+                                                                    <Setter Property="FontFamily" Value="{StaticResource Font_Awesome_5_Pro_Light_300}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=IsAxisInGroup, Mode=OneWay}" Value="True">
+                                                                            <Setter Property="Text" Value="&#xf0c8;"/>
+                                                                            <Setter Property="Foreground" Value="{StaticResource SeaGreenBrush}"/>
+                                                                            <Setter Property="FontFamily" Value="{StaticResource Font_Awesome_5_Pro_Solid_900}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock Text="Group" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="20" FontFamily="{StaticResource DinCondensed_Normal}"  Foreground="{StaticResource HeatherBrush}" ></TextBlock>
+                                                    </StackPanel>
+                                                </Label.Content>
+                                            </Label>
+                                            <Label  HorizontalAlignment="Left" Margin="50,0,0,0" Style="{StaticResource CategoryLabelStyle}" >
+                                                <Label.Content>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock FontSize="30">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="&#xf04d;"/>
+                                                                    <Setter Property="Foreground" Value="{StaticResource BlackPearlBrush}"/>
+                                                                    <Setter Property="FontFamily" Value="{StaticResource Font_Awesome_5_Pro_Light_300}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=IsAxisLockedGroup, Mode=OneWay}" Value="True">
+                                                                            <Setter Property="Text" Value="&#xf0c8;"/>
+                                                                            <Setter Property="Foreground" Value="{StaticResource SeaGreenBrush}"/>
+                                                                            <Setter Property="FontFamily" Value="{StaticResource Font_Awesome_5_Pro_Solid_900}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock Text="Locked" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="20" FontFamily="{StaticResource DinCondensed_Normal}"  Foreground="{StaticResource HeatherBrush}" ></TextBlock>
+                                                    </StackPanel>
+                                                </Label.Content>
+                                            </Label>
+                                            <Label  HorizontalAlignment="Left" Margin="50,0,0,0" Style="{StaticResource CategoryLabelStyle}" >
+                                                <Label.Content>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock FontSize="30">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="&#xf04d;"/>
+                                                                    <Setter Property="Foreground" Value="{StaticResource BlackPearlBrush}"/>
+                                                                    <Setter Property="FontFamily" Value="{StaticResource Font_Awesome_5_Pro_Light_300}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=IsAxisLeader, Mode=OneWay}" Value="True">
+                                                                            <Setter Property="Text" Value="&#xf0c8;"/>
+                                                                            <Setter Property="Foreground" Value="{StaticResource SeaGreenBrush}"/>
+                                                                            <Setter Property="FontFamily" Value="{StaticResource Font_Awesome_5_Pro_Solid_900}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock Text="Leader" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="20" FontFamily="{StaticResource DinCondensed_Normal}"  Foreground="{StaticResource HeatherBrush}" ></TextBlock>
+                                                    </StackPanel>
+                                                </Label.Content>
+                                            </Label>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="1"  Grid.ColumnSpan="2" Orientation="Vertical">
+                                            <Button Visibility="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowRunning, Mode=OneWay, Converter={StaticResource TrueIsCollapsedConverter}}"  Command="{Binding GroupSetupCommand}" Style="{StaticResource HoverCancelButtonStyle}" HorizontalAlignment="Right" HorizontalContentAlignment="Center" FontSize="20" Content="Set Up" Height="55" Width="200" Margin="0,10,10,10"  FontFamily="{StaticResource DinCondensed_Light}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>   
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Vertical">
+                            <Grid  VerticalAlignment="Stretch" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <GroupBox BorderBrush="#7F9CA9" Grid.Row="0" Margin="10,0,3,0"  VerticalAlignment="Top" BorderThickness="1" Background="{StaticResource FiordBrush}" Style="{DynamicResource GroupBoxStyle1}">
+                                    <GroupBox.Header >
+                                        <Label   
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                            <Label.Content>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xf546;" Foreground="{StaticResource GrayishblueBrush}" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="45"></TextBlock>
+                                                    <TextBlock Text="Software Limits" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="30" FontFamily="{StaticResource DinCondensed_Normal}" ></TextBlock>
+                                                </StackPanel>
+                                            </Label.Content>
+                                        </Label>
+                                    </GroupBox.Header>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <Label Content="Rigged Limits" FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Grid Margin="0,0,0,0"  HorizontalAlignment="Center" VerticalAlignment="Top" Width="210" Height="42"  >
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="157*"/>
+                                                    <ColumnDefinition Width="53*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ComboBox  SelectedValuePath="Value" ItemsSource="{Binding Path=EnableItems, Mode=OneWay}"
+                                          SelectedValue="{Binding Path=AxisVM.Rigged, Mode=TwoWay}"  Background="{StaticResource TaraweraBrush}"  x:Name="cmbCurrentSoftwareLimit" Grid.ColumnSpan="2">
+                                                    <ComboBox.Style>
+                                                        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                                                            <Setter Property="IsEnabled" Value="True"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Path=IsAdmin, Mode=OneWay}" Value="False">
+                                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Path=IsAxisInGroup, Mode=OneWay}" Value="True">
+                                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ComboBox.Style>
+                                                    <ComboBox.ItemContainerStyle>
+                                                        <Style TargetType="ComboBoxItem">
+                                                            <Setter Property="Background" Value="{StaticResource FiordBrush}"></Setter>
+                                                            <Setter Property="Foreground" Value="{StaticResource AppThemeBrush}"></Setter>
+                                                            <Setter Property="Height" Value="40"></Setter>
+                                                            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+                                                        </Style>
+                                                    </ComboBox.ItemContainerStyle>
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Rectangle Fill="{Binding Color, Mode=OneWay}" Height="20" Width="5" RadiusX="2" RadiusY="2"></Rectangle>
+                                                                <TextBlock Margin="4,0,0,0" Text="{Binding Path=Text, Mode=OneWay}"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <TextBlock  Visibility="{Binding SelectedItem, ElementName=cmbCurrentSoftwareLimit, Converter={StaticResource NullToVisibilityConverter}}" VerticalAlignment="Center"
+                 IsHitTestVisible="False" Foreground="{StaticResource AppThemeBrush}" FontFamily="{StaticResource DinCondensed_Light}" FontSize="22"
+                 Text="Please Choose..." Margin="10,8,0,7" Grid.ColumnSpan="2" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="1" Grid.Column="0"  Orientation="Vertical" Margin="3,0,3,0" >
+
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Soft Min"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter3}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox   MaxLength="16" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                                    Text="{Binding AxisVM.SoftDownLimit,
+                                                    StringFormat=F0,
+                                                    Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}" GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox" BasedOn="{StaticResource ReadonlyTextBoxStyle}">
+                                                        <Setter Property="IsReadOnly" Value="False"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Path=IsAdmin, Mode=OneWay}" Value="False">
+                                                                <Setter Property="IsReadOnly" Value="True"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsAxisInGroup, Mode=OneWay}" Value="True">
+                                                                <Setter Property="IsReadOnly" Value="True"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Rigged Lower Limit"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter3}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                       FontSize="22" FontFamily="{StaticResource DinCondensed_Bold}" Text="{Binding AxisVM.RiggedSoftDownLimit, StringFormat=F0, Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus, Converter={StaticResource MetricPositionConverter}}" GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+                                                <behavior:Interaction.Behaviors>
+                                                    <fb:TextBoxInputBehavior DataType="Decimal" IsLimitFocusBased="True"  Min="{Binding Path=AxisVM.SoftDownLimit, Mode=OneWay}"
+                                                                IsMetricSystem="True"  DecimalLimit="0" Max="{Binding Path=AxisVM.RiggedSoftUpLimit, Mode=OneWay, Converter={StaticResource AdditionConverter}, ConverterParameter=-1}"  />
+                                                </behavior:Interaction.Behaviors>
+
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox" BasedOn="{StaticResource ReadonlyTextBoxStyle}">
+                                                        <Setter Property="IsReadOnly" Value="False"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Path=IsAdmin, Mode=OneWay}" Value="False">
+                                                                <Setter Property="IsReadOnly" Value="True"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsAxisInGroup, Mode=OneWay}" Value="True">
+                                                                <Setter Property="IsReadOnly" Value="True"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical">
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Soft Max"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter3}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox  MaxLength="16" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                              FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                         Text="{Binding AxisVM.SoftUpLimit,
+                                                    StringFormat=F0,
+                                                    Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}" GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox" BasedOn="{StaticResource ReadonlyTextBoxStyle}">
+                                                        <Setter Property="IsReadOnly" Value="False"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Path=IsAdmin, Mode=OneWay}" Value="False">
+                                                                <Setter Property="IsReadOnly" Value="True"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsAxisInGroup, Mode=OneWay}" Value="True">
+                                                                <Setter Property="IsReadOnly" Value="True"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Rigged Upper Limit"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter3}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                       FontSize="22" FontFamily="{StaticResource DinCondensed_Bold}"  Text="{Binding AxisVM.RiggedSoftUpLimit, StringFormat=F0, Mode=TwoWay,
+                                                  UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}" GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+
+                                                <behavior:Interaction.Behaviors>
+                                                    <fb:TextBoxInputBehavior IsLimitFocusBased="True"  DataType="Decimal" Min="{Binding Path=AxisVM.RiggedSoftDownLimit, Mode=OneWay}"
+                                                                  IsMetricSystem="True" DecimalLimit="0" Max="{Binding Path=AxisVM.SoftUpLimit, Mode=OneWay}"  />
+                                                </behavior:Interaction.Behaviors>
+
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox" BasedOn="{StaticResource ReadonlyTextBoxStyle}">
+                                                        <Setter Property="IsReadOnly" Value="False"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Path=IsAdmin, Mode=OneWay}" Value="False">
+                                                                <Setter Property="IsReadOnly" Value="True"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsAxisInGroup, Mode=OneWay}" Value="True">
+                                                                <Setter Property="IsReadOnly" Value="True"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>
+                                <GroupBox BorderBrush="#7F9CA9" Grid.Row="1" Margin="10,30,3,0" BorderThickness="1" Background="{StaticResource FiordBrush}" Style="{DynamicResource GroupBoxStyle1}">
+                                    <GroupBox.Header >
+                                        <Label 
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                            <Label.Content>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xf625;" Foreground="{StaticResource GrayishblueBrush}" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="45"></TextBlock>
+                                                    <TextBlock Text="Velocity" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="30" FontFamily="{StaticResource DinCondensed_Normal}" ></TextBlock>
+                                                </StackPanel>
+                                            </Label.Content>
+                                        </Label>
+                                    </GroupBox.Header>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="255"/>
+                                            <ColumnDefinition Width="250"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0"  Orientation="Vertical" Margin="3,0,3,0" >
+                                            <Label Content="Ramp" FontSize="24" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Grid Margin="0,0,0,0"  HorizontalAlignment="Center" VerticalAlignment="Top" Width="210">
+                                                <ComboBox Background="{StaticResource TaraweraBrush}">
+                                                    <ComboBox.ItemContainerStyle>
+                                                        <Style TargetType="ComboBoxItem">
+                                                            <Setter Property="Background" Value="{StaticResource FiordBrush}"></Setter>
+                                                            <Setter Property="Foreground" Value="{StaticResource AppThemeBrush}"></Setter>
+                                                            <Setter Property="Height" Value="40"></Setter>
+                                                            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+                                                        </Style>
+                                                    </ComboBox.ItemContainerStyle>
+                                                    <ComboBoxItem IsSelected="True" >Default</ComboBoxItem>
+                                                </ComboBox>
+                                            </Grid>
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Jog Acceleration"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter2}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox TextAlignment="Right" PreviewTextInput="TextBox_PreviewTextInput"  Style="{StaticResource NewTextBoxStyle}" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                     Text="{Binding AxisVM.JogAcceleration,
+                                                    StringFormat=F0,
+                                                    Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}"   GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+                                                <behavior:Interaction.Behaviors>
+                                                    <fb:TextBoxInputBehavior DataType="Decimal"  Max="{Binding Path=AxisVM.MaxAcceleration, Mode=OneWay}"/>
+                                                </behavior:Interaction.Behaviors>
+                                            </TextBox>
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0" Padding="5,0,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Jog Velocity"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox TextAlignment="Right" PreviewTextInput="TextBox_PreviewTextInput"  Style="{StaticResource NewTextBoxStyle}" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                     Text="{Binding AxisVM.JogVelocity,
+                                                    StringFormat=F0,
+                                                    Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}"  GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+                                                <behavior:Interaction.Behaviors>
+                                                    <fb:TextBoxInputBehavior  IsMetricSystem="True" DataType="Decimal" Max="{Binding Path=AxisVM.MaxVelocity, Mode=OneWay}"/>
+                                                </behavior:Interaction.Behaviors>
+                                            </TextBox>
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Jog Deceleration"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter2}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox TextAlignment="Right" PreviewTextInput="TextBox_PreviewTextInput"  Style="{StaticResource NewTextBoxStyle}" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                     Text="{Binding AxisVM.JogDeceleration,
+                                                    Mode=TwoWay,
+                                                    StringFormat=F0,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}"  GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+                                                <behavior:Interaction.Behaviors>
+                                                    <fb:TextBoxInputBehavior DataType="Decimal"  Max="{Binding Path=AxisVM.MaxDeceleration, Mode=OneWay}"/>
+                                                </behavior:Interaction.Behaviors>
+                                            </TextBox>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Vertical">
+
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="15,10,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Min Velocity"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox TextAlignment="Left"  HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                     Text="{Binding AxisVM.MinVelocity,
+                                                    StringFormat=F0,
+                                                    Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}"  >
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox" BasedOn="{StaticResource ReadonlyTextBoxStyle}">
+                                                        <Setter Property="IsReadOnly" Value="True"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Path=IsFlyhouse, Mode=OneWay}" Value="True">
+                                                                <Setter Property="IsReadOnly" Value="False"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Max Acceleration"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter2}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox TextAlignment="Left" Style="{StaticResource ReadonlyTextBoxStyle}" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                     Text="{Binding AxisVM.MaxAcceleration,
+                                                    StringFormat=F0,
+                                                    Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}"  />
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Max Velocity"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox TextAlignment="Left"  Style="{StaticResource ReadonlyTextBoxStyle}" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                     Text="{Binding AxisVM.MaxVelocity,
+                                                    StringFormat=F0,
+                                                    Mode=TwoWay,
+                                                    UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}"  />
+                                            <TextBlock FontSize="24" HorizontalAlignment="Left" Margin="10,5,0,0"  VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}">
+                                                <TextBlock.Inlines>
+                                                    <Run Text="Max Deceleration"/>
+                                                    <Run Text="{Binding Converter={StaticResource MetricLabelConverter2}, Mode=OneWay}"/>
+                                                </TextBlock.Inlines>
+                                            </TextBlock>
+                                            <TextBox TextAlignment="Left"  Style="{StaticResource ReadonlyTextBoxStyle}" HorizontalAlignment="Left" Margin="15,0,0,0"  Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                     Text="{Binding AxisVM.MaxDeceleration,
+                                                    StringFormat=F0,
+                                                    Mode=TwoWay,
+                                                   UpdateSourceTrigger=LostFocus,Converter={StaticResource MetricPositionConverter}}"   />
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>
+                                <GroupBox Visibility="Collapsed" BorderBrush="#7F9CA9" Grid.Row="2" Margin="10,30,3,0" BorderThickness="1" Background="{StaticResource FiordBrush}" Style="{DynamicResource GroupBoxStyle1}">
+                                    <GroupBox.Header >
+                                        <Label 
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                            <Label.Content>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xf1b3;" Foreground="{StaticResource GrayishblueBrush}" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="45"></TextBlock>
+                                                    <TextBlock Text="Visualizer" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="30" FontFamily="{StaticResource DinCondensed_Normal}" ></TextBlock>
+                                                </StackPanel>
+                                            </Label.Content>
+                                        </Label>
+                                    </GroupBox.Header>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Grid.Row="0" Orientation="Horizontal" >
+                                            <Label Content="X Location" FontSize="24" HorizontalAlignment="Left" Margin="15,5,45,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Label Content="Y Location" FontSize="24" HorizontalAlignment="Left" Margin="15,5,45,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                            <Label Content="Z Location" FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Orientation="Horizontal" >
+                                            <TextBox TextAlignment="Right" IsReadOnly="{Binding Path=IsAdmin, Mode=OneWay, Converter={StaticResource NegateConverter}}" Style="{StaticResource NewTextBoxStyle}" MaxLength="16" HorizontalAlignment="Left" Margin="15,0,0,0" Width="140" Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                         Text="{Binding AxisVM.VisualizerXLocation,
+                                                        Mode=TwoWay,
+                                                        UpdateSourceTrigger=PropertyChanged}"  GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+
+                                            </TextBox>
+                                            <TextBox TextAlignment="Right" IsReadOnly="{Binding Path=IsAdmin, Mode=OneWay, Converter={StaticResource NegateConverter}}" Style="{StaticResource NewTextBoxStyle}" MaxLength="16" HorizontalAlignment="Left" Margin="15,0,0,0" Width="140" Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                         Text="{Binding AxisVM.VisualizerYLocation,
+                                                        Mode=TwoWay,
+                                                        UpdateSourceTrigger=PropertyChanged}"   GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+
+                                            </TextBox>
+                                            <TextBox TextAlignment="Right" IsReadOnly="{Binding Path=IsAdmin, Mode=OneWay, Converter={StaticResource NegateConverter}}" Style="{StaticResource NewTextBoxStyle}" MaxLength="16" HorizontalAlignment="Left" Margin="15,0,0,0" Width="140" Height="43"
+                                             FontSize="22" FontFamily="{ StaticResource DinCondensed_Bold }" 
+                                         Text="{Binding AxisVM.VisualizerZLocation,
+                                                        Mode=TwoWay,
+                                                        UpdateSourceTrigger=PropertyChanged}"   GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus">
+
+                                            </TextBox>
+                                        </StackPanel>
+
+                                    </Grid>
+                                </GroupBox>
+                                <GroupBox BorderBrush="#7F9CA9" Grid.Row="3" Margin="10,30,3,0" BorderThickness="1" Background="{StaticResource FiordBrush}" Style="{DynamicResource GroupBoxStyle1}">
+                                    <GroupBox.Header >
+                                        <Label 
+                       Style="{StaticResource CategoryLabelStyle}" >
+                                            <Label.Content>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xf140;" Foreground="{StaticResource GrayishblueBrush}" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" FontSize="45"></TextBlock>
+                                                    <TextBlock Text="Targets" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="30" FontFamily="{StaticResource DinCondensed_Normal}" ></TextBlock>
+                                                </StackPanel>
+                                            </Label.Content>
+                                        </Label>
+                                    </GroupBox.Header>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Grid.Row="0" Orientation="Vertical" Grid.ColumnSpan="2">
+                                            <!--<Label Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit:" FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                            <Label Content="- eaque ipsa" FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>
+                            <Label Content="- quae ab illo" FontSize="24" HorizontalAlignment="Left" Margin="15,5,0,0" VerticalAlignment="Top" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource HeatherBrush}"/>-->
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1"  Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                                            <Button Command="{Binding TargetSetupCommand}" Style="{StaticResource HoverCancelButtonStyle}" FontSize="20" Content="Set Up" Height="55" Width="200" Margin="0,10,10,10"  FontFamily="{StaticResource DinCondensed_Light}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+
+                <local:CustomKeyboard  KeyboardMode="{Binding Path=CurrentKeyboardMode, Mode=TwoWay}" Grid.Row="3"  Visibility="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowRunning, Mode=OneWay, Converter={StaticResource TrueIsCollapsedConverter}}" />
+
+                <Grid Grid.Row="4" Margin="5,20,5,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button  Command="{Binding ResetAxisCommand}" Content="Reset Axis" Margin="0,0,0,0">
+                        <!--<Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource FooterButton}" >
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowRunning, Mode=OneWay}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>-->
+                    </Button>
+                    
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
+                        <Button  Command="{Binding CloseCommand}" Margin="0,0,10,0" >
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource FooterButton}" >
+                                    <Setter Property="Content" Value="Cancel"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowRunning, Mode=OneWay}" Value="True">
+                                            <Setter Property="Content" Value="Back"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button  Command="{Binding SaveAxisCommand}" IsEnabled="{Binding Path=IsSaving, Mode=OneWay, Converter={StaticResource NegateConverter}}" Content="Update" Margin="0,0,0,0" >
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource FooterButton}" >
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowRunning, Mode=OneWay}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+                
+            
+            </Grid>
+        </Border>
+
+        <!--<Border Grid.Row="1" Margin="0,10" Padding="10,0" Style="{StaticResource MainBorder}">
+            <local:CustomKeyboard  KeyboardMode="{Binding Path=CurrentKeyboardMode, Mode=TwoWay}"/>
+        </Border>-->
+    </Grid>
+
+</UserControl>

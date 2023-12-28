@@ -1,0 +1,231 @@
+﻿<UserControl x:Class="Flyhouse.UI.Dialogs.View.DialogAxisStatusView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:global="clr-namespace:Flyhouse.Globals"
+             xmlns:enum="clr-namespace:Flyhouse.Enum"
+             xmlns:local="clr-namespace:Flyhouse.UI.Dialogs.View" xmlns:Converter="clr-namespace:Flyhouse.Converters" xmlns:controls="clr-namespace:Flyhouse.Controls"
+             Style="{DynamicResource CustomUserControlStyle}">
+
+
+    <Border  Style="{StaticResource MainBorder}" BorderThickness="2">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition MinHeight="250" />
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Grid  MinWidth="400">
+                <Label Padding="0,0,0,0"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Top"
+                   Foreground="{StaticResource AppThemeBrush}">
+                    <Label.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xf690;" Foreground="White" FontWeight="Light" FontFamily="{StaticResource Font_Awesome_5_Pro_Light_300}" FontSize="40" VerticalAlignment="Center"></TextBlock>
+                            <TextBlock Text="Axis Status" Margin="10,0,0,0" FontSize="30" VerticalAlignment="Center" FontWeight="Light" FontFamily="{StaticResource AgencyFB_Bold}" ></TextBlock>
+
+                        </StackPanel>
+                    </Label.Content>
+
+                </Label>
+                <Border  Height="1" HorizontalAlignment="Stretch" BorderBrush="{DynamicResource GrayishblueBrush}" BorderThickness="1" Margin="0,50,0,0"/>
+            </Grid>
+
+
+            <Grid Margin="0,10,0,0" Grid.Row="1" Grid.ColumnSpan="3" >
+
+                <ItemsControl>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="25" Height="25" Margin="10" BorderThickness="3" BorderBrush="{StaticResource DarkGrayBrush}" CornerRadius="60">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsAxisActive, Mode=OneWay}" Value="False">
+                                            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=IsAxisActive, Mode=OneWay}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CueWaitingForMovementBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource AppThemeBrush}" Text="Axis is active" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="25" Height="25" Margin="10" BorderThickness="3" BorderBrush="{StaticResource DarkGrayBrush}" CornerRadius="60">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsStoOk, Mode=OneWay}" Value="False">
+                                            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=IsStoOk, Mode=OneWay}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CueWaitingForMovementBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource AppThemeBrush}" Text="STO OK" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="25" Height="25" Margin="10" BorderThickness="3" BorderBrush="{StaticResource DarkGrayBrush}" CornerRadius="60">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsKidOk, Mode=OneWay}" Value="False">
+                                            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=IsKidOk, Mode=OneWay}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CueWaitingForMovementBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource AppThemeBrush}" Text="Kid OK" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="25" Height="25" Margin="10" BorderThickness="3" BorderBrush="{StaticResource DarkGrayBrush}" CornerRadius="60">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsSafetySystemOk, Mode=OneWay}" Value="False">
+                                            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=IsSafetySystemOk, Mode=OneWay}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CueWaitingForMovementBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource AppThemeBrush}" Text="Safety System OK" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="25" Height="25" Margin="10" BorderThickness="3" BorderBrush="{StaticResource DarkGrayBrush}" CornerRadius="60">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsUltimateLimitOk, Mode=OneWay}" Value="False">
+                                            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=IsUltimateLimitOk, Mode=OneWay}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CueWaitingForMovementBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource AppThemeBrush}" Text="Ultimate Limit OK" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="25" Height="25" Margin="10" BorderThickness="3" BorderBrush="{StaticResource DarkGrayBrush}" CornerRadius="60">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsRemoteModeActive, Mode=OneWay}" Value="False">
+                                            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=IsRemoteModeActive, Mode=OneWay}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CueWaitingForMovementBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource AppThemeBrush}" Text="Remote Mode active" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="25" Height="25" Margin="10" BorderThickness="3" BorderBrush="{StaticResource DarkGrayBrush}" CornerRadius="60">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsCollisionUpOk, Mode=OneWay}" Value="False">
+                                            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=IsCollisionUpOk, Mode=OneWay}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CueWaitingForMovementBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource AppThemeBrush}" Text="Collision Up OK" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="25" Height="25" Margin="10" BorderThickness="3" BorderBrush="{StaticResource DarkGrayBrush}" CornerRadius="60">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsCollisionDownOk, Mode=OneWay}" Value="False">
+                                            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=IsCollisionDownOk, Mode=OneWay}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CueWaitingForMovementBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource AppThemeBrush}" Text="Collision Down OK" Margin="10"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="25" Height="25" Margin="10" BorderThickness="3" BorderBrush="{StaticResource DarkGrayBrush}" CornerRadius="60">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsHoistReady, Mode=OneWay}" Value="False">
+                                            <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Path=IsHoistReady, Mode=OneWay}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource CueWaitingForMovementBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" FontFamily="{StaticResource  DinCondensed_Light}" Foreground="{StaticResource AppThemeBrush}" Text="Hoist Ready" Margin="10"/>
+                    </StackPanel>
+                </ItemsControl>
+
+            </Grid>
+            <Grid Grid.Row="2" Margin="0,25,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button   Margin="0,0,0,0" Grid.Column="1" Command="{Binding CloseCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource FooterButton}" >
+                            <Setter Property="Content" Value="Back"/>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+
+</UserControl>

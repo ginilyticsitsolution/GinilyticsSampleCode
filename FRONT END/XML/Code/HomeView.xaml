@@ -1,0 +1,577 @@
+﻿<UserControl x:Class="Flyhouse.UI.Screens.View.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Flyhouse.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:model="clr-namespace:Flyhouse.UI.Model.ViewModel"
+             xmlns:converter="clr-namespace:Flyhouse.Converters"
+             xmlns:view="clr-namespace:Flyhouse.UI.Model.View"
+             xmlns:global="clr-namespace:Flyhouse.Globals" x:Name="MainHomeView"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase" xmlns:behaviors="clr-namespace:Flyhouse.Behaviors" Loaded="UserControl_Loaded"
+             d:DesignHeight="950"
+             d:DesignWidth="800"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converter:CompareConverter  Operation="GreaterThan" x:Key="GreaterThanConverter"/>
+        <converter:DragDropValueConverter x:Key="ddconverter"/>
+        <Storyboard x:Key="sbShowTopMenu" >
+            <ThicknessAnimation Storyboard.TargetProperty="Margin" From="0,-600,0,0" To="0,50,0,0" DecelerationRatio=".5" Duration="0:0:1" />
+        </Storyboard>
+        <Storyboard x:Key="sbHideTopMenu">
+            <ThicknessAnimation Storyboard.TargetProperty="Margin" From="0,0,0,0" To="0,-600,0,0" AccelerationRatio=".9" Duration="0:0:1" />
+        </Storyboard>
+
+        <Storyboard x:Key="sbShowRightMenu" >
+            <ThicknessAnimation Storyboard.TargetProperty="Margin" From="0,60,-300,0" To="0,60,0,0" DecelerationRatio=".9" Duration="0:0:1" />
+        </Storyboard>
+        <Storyboard x:Key="sbHideRightMenu">
+            <ThicknessAnimation Storyboard.TargetProperty="Margin" From="0,60,0,0" To="0,60,-300,0" AccelerationRatio=".9" Duration="0:0:1" />
+        </Storyboard>
+        <BooleanToVisibilityConverter x:Key="visConverter" ></BooleanToVisibilityConverter>
+        <!--<Style x:Key="ToggleButtonStyle1" BasedOn="{StaticResource HoverToggleButtonStyle}"
+            TargetType="{x:Type ToggleButton}" />-->
+
+        <Storyboard x:Key="AnimateFlicker" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     From="0"
+                     To="1"
+                     AutoReverse="True"
+                     BeginTime="0:0:1"
+                     Duration="0:0:0.08" />
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     From="1"
+                     To="1"
+                     AutoReverse="True"
+                     Duration="0:0:0.4" />
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                     From="1"
+                     To="0"
+                     AutoReverse="True"
+                     Duration="0:0:0.08" />
+        </Storyboard>
+    </UserControl.Resources>
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid x:Name="gridSize">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="3*" />
+            </Grid.RowDefinitions>
+
+            <Border BorderThickness="0,0,0,4" x:Name="myborderHome" CornerRadius="0">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="BorderBrush" Value="{StaticResource NotRunningGradientBrush}"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition  Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsAppRunning, Mode=OneWay}" Value="True"/>
+                                    <Condition  Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsEStopError, Mode=OneWay}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="BorderBrush" Value="{StaticResource RunningGradientBrush}"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+
+
+                <Grid  Margin="0,0,0,4"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.Resources>
+                        <Style BasedOn="{StaticResource LabelStyle}"
+                           TargetType="Label">
+                            <Setter Property="Margin"
+                                Value="10,0" />
+                            <Setter Property="Foreground"
+                                Value="{StaticResource AppThemeBrush}" />
+                        </Style>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button FontSize="32" VerticalAlignment="Center" Margin="10" 
+                            IsEnabled="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowActivateDeactivateInProgress, Mode=OneWay, Converter={StaticResource NegateConverter}}" 
+                            Command="{Binding Path=ActivateToggleCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button"  BasedOn="{StaticResource TransparentButton}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowRunning, Mode=OneWay}" Value="False">
+                                        <Setter Property="Content" Value="&#xf044;"/>
+                                        <Setter  Property="Foreground" Value="#FF8aa6b2"/>
+                                        <Setter  Property="FontFamily" Value="{StaticResource FontAwesome6_Bold}"/>
+                                    </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowRunning, Mode=OneWay}" Value="True">
+                                        <Setter Property="Content" Value="&#xf2dd;"/>
+                                        <Setter  Property="Foreground" Value="#FF8ecd41"/>
+                                        <Setter  Property="FontFamily" Value="{StaticResource Font_Awesome_5_Brands_Regular_400}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <StackPanel HorizontalAlignment="Center" Grid.Column="4"  
+                            Orientation="Horizontal">
+                        <Label  x:Name="showNameLabel"
+                           FontSize="30"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontFamily="{StaticResource DinCondensed_Normal}"
+                           Content="{Binding ShowNameContent}" Height="45" Margin="-135,0,0,0" />
+                    </StackPanel>
+                    <Label Height="30" Grid.Column="3" Content="{Binding Time , Mode=OneWay}" Foreground="White"  />
+
+
+                    <ToggleButton Grid.Column="6" x:Name="viewScreensbtn" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource HoverToggleButtonStyle}" ToolTip="Open Secondary Screen" Command="{Binding OpenViewsCommand}">
+                        <ToggleButton.Template>
+                            <ControlTemplate>
+                                <Grid  >
+                                    <Border CornerRadius="20" Width="40" Height="40" Background="#022938" Opacity="0.3" >
+                                    </Border>
+                                    <Border CornerRadius="14" Width="28" Height="28" Background="#b06919" Opacity="0.8" >
+                                    </Border>
+                                </Grid>
+                            </ControlTemplate>
+                        </ToggleButton.Template>
+                    </ToggleButton>
+
+                    <StackPanel Orientation="Horizontal" Grid.Column="8" HorizontalAlignment="Right">
+
+                        <Button Margin="0,0,5,0" Foreground="{StaticResource CrimsonBrush}" FontFamily="{StaticResource Font_Awesome_5_Pro_Solid_900}" 
+                                Content="&#xf06a;"  VerticalAlignment="Center"  ToolTip="Reset Safety?" FontSize="32" Command="{Binding Path=ResetKidSafetyCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource TransparentButton}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=KidSafetyIssueAxes.Count, Mode=OneWay, Converter={StaticResource GreaterThanConverter}, ConverterParameter=0}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=HasSafetyIssue, Mode=OneWay}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+
+                                        <!--<DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsSTOError, Mode=OneWay}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>-->
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!--<Button Margin="0,0,5,0" Style="{StaticResource TransparentButton}" Foreground="{StaticResource CrimsonBrush}" FontFamily="{StaticResource FontAwesome6_Bold}" 
+                                Visibility="{Binding Source={x:Static global:GlobalManager.Instance}, Path=HasSafetyIssue, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                Content="&#xe247;"  VerticalAlignment="Center"  ToolTip="Reset Safety?" FontSize="32" Command="{Binding Path=ResetSafetyCommand}"/>
+
+                        <Button Margin="0,0,5,0" Style="{StaticResource TransparentButton}" Foreground="{StaticResource CrimsonBrush}" FontFamily="{StaticResource FontAwesome6_Bold}" 
+                                Visibility="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsEStopError, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                Content="&#xf1e6;"  VerticalAlignment="Center"  ToolTip="Reset New EStop?" FontSize="32" Command="{Binding Path=ResetEStopCommand}"/>-->
+
+                        <!--<Button Margin="0,0,5,0" Style="{StaticResource TransparentButton}" Foreground="{StaticResource CrimsonBrush}" FontFamily="{StaticResource FontAwesome6_Bold}" 
+                                Visibility="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsSTOActive, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                Content="&#xf75a;"  VerticalAlignment="Center"  ToolTip="Reset EStop?" FontSize="32" Command="{Binding Path=ResetEStopCommand}"/>-->
+
+
+                        <ToggleButton Name="btnRightMenuShow"  Margin="0,0,5,0" VerticalAlignment="Center" HorizontalAlignment="Right" ToolTip="E-Stop" FontSize="32" Checked="btnRightMenuShow_Checked" Unchecked="btnRightMenuShow_Unchecked" >
+                            <ToggleButton.Style>
+                                <Style TargetType="ToggleButton" BasedOn="{StaticResource HoverToggleButtonStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsEStopError, Mode=OneWay}" Value="False">
+                                            <Setter Property="Content" Value="&#xe02d;"/>
+                                            <Setter Property="Foreground" Value="{StaticResource BotticelliBrush}"/>
+                                            <Setter Property="FontFamily" Value="{StaticResource Font_Awesome_5_Pro_Light_300}"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsEStopError, Mode=OneWay}" Value="True">
+                                            <Setter Property="Content" Value="&#xe02e;"/>
+                                            <Setter Property="Foreground" Value="{StaticResource CrimsonBrush}"/>
+                                            <Setter Property="FontFamily" Value="{StaticResource Font_Awesome_5_Pro_Solid_900}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToggleButton.Style>
+                        </ToggleButton>
+                    </StackPanel>
+
+                </Grid>
+            </Border>
+
+
+            <controls:DraggablePanel Grid.Row="1" x:Name="dragpnl"
+                                 ScreenIndex="{Binding ScreenIndex,
+                                                       Mode=TwoWay}"
+                                     
+                                 Screens="{Binding Screens, Mode=OneWay}" 
+                                     />
+
+            <StackPanel Grid.Row="2" Background="{StaticResource DavyGreyBrush}" >
+                <controls:ScrollingItemsControl Rows="{Binding Source={x:Static global:GlobalManager.Instance}, Path=AxisPoolRows, Mode=OneWay}" Margin="0,0,0,0"   x:Name="testaxisrresult" ItemsSource="{Binding AxesCameras, Mode=OneWay}"  >
+                    <controls:ScrollingItemsControl.ItemTemplate>
+                        <DataTemplate 
+                           >
+                            <ContentControl Margin="-12,-5,-14,-5" Content="{Binding}" >
+                                <ContentControl.Style>
+                                    <Style TargetType="ContentControl">
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding IsGroupLeadAxis}" Value="False " >
+                                                <Setter Property="ContentTemplate">
+                                                    <Setter.Value>
+                                                        <DataTemplate>
+                                                            <view:AxisView>
+                                                                <i:Interaction.Behaviors>
+                                                                    <controls:TouchClickBehavior AllowDragDrop="True" AssociatedControl="{Binding ElementName=cuelistresult}" 
+                                                                        Clicked="{Binding DataContext.AxisSelectedCommand,RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                                                </i:Interaction.Behaviors>
+                                                            </view:AxisView>
+                                                        </DataTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsGroupLeadAxis}" Value="True">
+                                                <Setter Property="ContentTemplate">
+                                                    <Setter.Value>
+                                                        <DataTemplate>
+                                                            <view:GroupAxisView/>
+                                                        </DataTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsFaultGroup}" Value="True">
+                                                <Setter Property="ContentTemplate">
+                                                    <Setter.Value>
+                                                        <DataTemplate>
+                                                            <view:FaultGroupAxis>
+                                                            </view:FaultGroupAxis>
+                                                        </DataTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ItemType}" Value="Camera">
+                                                <Setter Property="ContentTemplate">
+                                                    <Setter.Value>
+                                                        <DataTemplate>
+                                                            <view:NewCameraView>
+                                                                <i:Interaction.Behaviors>
+                                                                    <controls:TouchClickBehavior AllowDragDrop="True" AssociatedControl="{Binding ElementName=cuelistresult}" 
+                                                                        Clicked="{Binding DataContext.CameraClicked,RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                                                </i:Interaction.Behaviors>
+                                                            </view:NewCameraView>
+                                                        </DataTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            
+                                           
+                                        </Style.Triggers>
+                                    </Style>
+                                </ContentControl.Style>
+                            </ContentControl>
+
+                        </DataTemplate>
+                    </controls:ScrollingItemsControl.ItemTemplate>
+                </controls:ScrollingItemsControl>
+            </StackPanel>
+
+            <!--<StackPanel Grid.Row="3" Background="{StaticResource DavyGreyBrush}" >
+                <controls:ScrollingItemsControl Margin="0,0,0,0"   x:Name="testCamera" ItemsSource="{Binding Camera, Mode=OneWay}"  >
+                    <controls:ScrollingItemsControl.ItemTemplate>
+                        <DataTemplate 
+                           >
+                            <view:NewCameraView/>
+                        </DataTemplate>
+                    </controls:ScrollingItemsControl.ItemTemplate>
+                </controls:ScrollingItemsControl>
+            </StackPanel>-->
+
+            <Grid Grid.Row="4">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto"  />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+
+                <!---->
+                <Grid Grid.Row="1">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=btnJogItemContainer, Path=IsChecked}" Value="False">
+                                    <Setter Property="Grid.RowSpan" Value="2"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <!--{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowRunning, Mode=OneWay, Converter={StaticResource NegateConverter}}-->
+                    <ScrollViewer x:Name="cuelistresult"  PanningMode="VerticalFirst" Drop="cuelistresult_Drop" AllowDrop="True" Grid.Row="1"  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,10,0,0" Style="{DynamicResource ScrollViewerStyle}"  >
+
+                        <ItemsControl  Grid.Row="1" x:Name="testcuesrresult"  HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding Cues}" >
+                            <!--<ItemsControl.Resources>
+                            <CollectionViewSource x:Key="Orders" Source="{Binding Cues}">
+                                <CollectionViewSource.SortDescriptions>
+                                    <scm:SortDescription PropertyName="Number" Direction="Ascending"/>
+                                </CollectionViewSource.SortDescriptions>
+                            </CollectionViewSource>
+                        </ItemsControl.Resources>-->
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate  DataType="{x:Type model:Cue}">
+                                    <view:CueView  Width="Auto" HorizontalAlignment="Stretch">
+                                    </view:CueView>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!--<i:Interaction.Behaviors>
+                            <behaviors:BubbleTouchBehavior ParentElement="{Binding ElementName=MainHomeView, Path=Tag}"/>
+                        </i:Interaction.Behaviors>-->
+                    </ScrollViewer>
+
+
+                </Grid>
+
+                <Grid Name="bottomGrid" Grid.Row="2"
+              Visibility="{Binding Path=IsJoystickViewOpen, Mode=OneWay, Converter={StaticResource visConverter}}">
+
+
+                    <Border x:Name="userborder" Grid.Row="2" Grid.ColumnSpan="2"  BorderBrush="{StaticResource DavyGreyBrush}"
+            BorderThickness="4"
+            CornerRadius="2">
+                        <Grid x:Name="userGrid"  >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="55" />
+                                <RowDefinition  Height="335" />
+                                <RowDefinition Height="70"/>
+                            </Grid.RowDefinitions>
+                            <Label Padding="30,10,0,0"
+                                   
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Top"
+                   Foreground="{StaticResource AppThemeBrush}">
+                                <Label.Content>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xf8c5;" Foreground="White" FontWeight="Light" FontFamily="{StaticResource Font_Awesome_5_Pro_Light_300}" FontSize="30" VerticalAlignment="Center"></TextBlock>
+                                        <TextBlock Text="JOG" Margin="10,0,0,0" FontSize="35" VerticalAlignment="Center" FontWeight="Light" FontFamily="{StaticResource AgencyFB_Bold}" ></TextBlock>
+                                    </StackPanel>
+                                </Label.Content>
+                            </Label>
+                            <ScrollViewer x:Name="cuelistresult1"  Drop="joglistresult_Drop" AllowDrop="True" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,10,0,0" Style="{DynamicResource ScrollViewerStyle}" Grid.ColumnSpan="2"  >
+
+                                <ItemsControl Grid.Row="1"  x:Name="testcuesrresult1"  HorizontalAlignment="Left"
+                          ItemsSource="{Binding JoyCues}" Width="Auto"  ScrollViewer.VerticalScrollBarVisibility="Auto" >
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate  DataType="{x:Type model:Cue}">
+                                            <view:JoyStickCueView JoystickID="{Binding Path=Number, Mode=OneWay}"  Width="Auto" HorizontalAlignment="Left">
+                                            </view:JoyStickCueView>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <StackPanel Orientation="Horizontal" Grid.Row="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,10,10">
+                                <Button x:Name="btnClose" Command="{Binding CloseCommand}"  Style="{StaticResource HoverButtonStyle}" HorizontalAlignment="Right" HorizontalContentAlignment="Center"  Content="Close" Height="55" Width="128" FontSize="18" Margin="0,0,10,0"  FontFamily="{StaticResource AgencyFB_Bold}"></Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="3" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Visibility="{Binding Source={x:Static global:GlobalManager.Instance}, Path=IsShowRunning, Mode=OneWay, Converter={StaticResource TrueIsCollapsedConverter}}" Grid.Column="0" HorizontalAlignment="Right" Margin="5,0,0,0" Padding="0,0,2,0" Background="#72797E" BorderBrush="#72797E" CornerRadius="16,16,0,0" BorderThickness="5">
+                        <Button BorderBrush="#72797E" Command="{Binding CueItemContainerCommand}" >
+                            <StackPanel x:Name="stkCue" Background="#72797E" Width="115" Orientation="Horizontal" Height="63" VerticalAlignment="Top"  HorizontalAlignment="Right" Drop="stkCue_Drop" >
+
+                                <Label HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           FontFamily="{StaticResource DinCondensed_Normal}"
+                           Content=" CUE "
+                           FontSize="23"
+                           FontStyle="Italic"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           IsHitTestVisible="False"
+                                   />
+
+                                <Border Background="{StaticResource DavyGreyBrush}" BorderBrush="{StaticResource BlackPearlBrush}" BorderThickness="1" CornerRadius="30" Width="61" x:Name="bderDropCue" >
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" FlowDirection="RightToLeft">
+                                        <Label  Padding="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Center"
+                           Content="&#xf358;"
+                           FontFamily="{StaticResource  Font_Awesome_5_Pro_Solid_900}"
+                           FontSize="59"
+                           FontStyle="Italic"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource BlackPearlBrush}"
+                           IsHitTestVisible="False" Height="62" Margin="0,-1,0,0" />
+                                        <Label HorizontalAlignment="Center"
+                                           x:Name="lblDropCue"
+                           VerticalAlignment="Center" 
+                           Content="NEW CUE: DROP AXIS HERE"
+                                           Padding="10,0,0,0"
+                           FontFamily="{StaticResource DinCondensed_Normal}"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource BlackPearlBrush}"
+                           IsHitTestVisible="False" >
+                                        </Label>
+                                    </StackPanel>
+                                </Border>
+
+
+                                <StackPanel.Triggers>
+                                    <EventTrigger RoutedEvent="DragEnter">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="stkCue" Storyboard.TargetProperty="Width" To="300"/>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="bderDropCue" Storyboard.TargetProperty="Width" To="250"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                    <EventTrigger RoutedEvent="DragLeave">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="stkCue" Storyboard.TargetProperty="Width" To="115"/>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="bderDropCue" Storyboard.TargetProperty="Width" To="60"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                    <EventTrigger RoutedEvent="Drop">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="stkCue" Storyboard.TargetProperty="Width" To="115"/>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="bderDropCue" Storyboard.TargetProperty="Width" To="60"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </StackPanel.Triggers>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+
+
+                    <Border Grid.Column="1" HorizontalAlignment="Left"  Margin="5,0,0,0" Padding="5,0,0,0" Background="#72797E" BorderBrush="#72797E" CornerRadius="16,16,0,0" BorderThickness="5">
+                        <ToggleButton BorderBrush="#72797E" x:Name="btnJogItemContainer"  IsChecked="{Binding Path=IsJoystickViewOpen, Mode=TwoWay}">
+                            <ToggleButton.Style>
+                                <Style TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonNewStyle}">
+                                    <Style.Triggers>
+                                        <!--<Trigger Property="IsMouseOver" Value="False">
+                                            <Setter Property="IsChecked" Value="False"></Setter>
+                                        </Trigger>-->
+                                        <!--<Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="IsChecked" Value="True"></Setter>
+                                        </Trigger>-->
+                                    </Style.Triggers>
+                                </Style>
+                            </ToggleButton.Style>
+                            <!--Command="{Binding JogItemContainerCommand}"-->
+                            <StackPanel x:Name="stkJog" Background="#72797E" Drop="stkJog_Drop" Width="115" Orientation="Horizontal" Height="63" VerticalAlignment="Center">
+                                <!---->
+                                <Border Background="{StaticResource DavyGreyBrush}" BorderBrush="{StaticResource BlackPearlBrush}" BorderThickness="1" CornerRadius="29" Width="61" x:Name="bderDrop" >
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label  Padding="0,0,0,0"
+                           Content="&#xf358;"
+                           FontFamily="{StaticResource  Font_Awesome_5_Pro_Solid_900}"
+                           FontSize="59"
+                           FontStyle="Italic"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource BlackPearlBrush}"
+                           IsHitTestVisible="False" Margin="0,-1,0,0" />
+                                        <Label HorizontalAlignment="Center"
+                                           x:Name="lblDrop"
+                           VerticalAlignment="Center" 
+                           Content="MANUAL: DROP AXIS HERE"
+                           FontFamily="{StaticResource DinCondensed_Normal}"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource BlackPearlBrush}"
+                           IsHitTestVisible="False" >
+                                        </Label>
+
+                                    </StackPanel>
+                                </Border>
+
+                                <Label HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontFamily="{StaticResource DinCondensed_Normal}"
+                           Content=" JOG "
+                           FontSize="23"
+                           FontStyle="Italic"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           IsHitTestVisible="False" />
+
+                                <!--<i:Interaction.Triggers>
+                                    <i:EventTrigger  EventName="DragEnter">
+                                        <i:CallMethodAction  PropertyName="DataContext.IsJoystickViewOpen" Value="True"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>-->
+                                <StackPanel.Triggers>
+                                    <EventTrigger RoutedEvent="DragEnter">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="stkJog" Storyboard.TargetProperty="Width" To="300"/>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="bderDrop" Storyboard.TargetProperty="Width" To="250"/>
+                                                <!--<BooleanAnimationUsingKeyFrames Duration="0:0:1" Storyboard.TargetName="btnJogItemContainer" Storyboard.TargetProperty="IsChecked"  FillBehavior="HoldEnd">
+                                                    <DiscreteBooleanKeyFrame Value="True" KeyTime="0:0:0"/>
+                                                    <DiscreteBooleanKeyFrame Value="True" KeyTime="0:0:1"/>
+                                                </BooleanAnimationUsingKeyFrames>-->
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                    <EventTrigger RoutedEvent="DragLeave">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="stkJog" Storyboard.TargetProperty="Width" To="115"/>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="bderDrop" Storyboard.TargetProperty="Width" To="60"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                    <EventTrigger RoutedEvent="Drop">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="stkJog" Storyboard.TargetProperty="Width" To="115"/>
+                                                <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="bderDrop" Storyboard.TargetProperty="Width" To="60"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </StackPanel.Triggers>
+                            </StackPanel>
+                        </ToggleButton>
+                    </Border>
+
+                </Grid>
+            </Grid>
+        </Grid>
+        <StackPanel  Name="pnlTopMenu"  Orientation="Vertical" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="0,-640,0,0">
+            <Border BorderBrush="{StaticResource FiordBrush}" x:Name="pnlborder" BorderThickness="1" Height="620" Margin="0,8,0,0" Background="#3E545F" >
+            </Border>
+        </StackPanel>
+        <StackPanel    Name="pnlRightMenu" Visibility="Collapsed" Orientation="Horizontal" Height="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Right" Margin="0,60,-150,0">
+
+            <Border x:Name="pnlrightborder" BorderBrush="{StaticResource BotticelliBrush}" BorderThickness="1" Width="480" Background="#4C808080" >
+
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>
