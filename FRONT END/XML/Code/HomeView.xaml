@@ -7,7 +7,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:model="clr-namespace:Flyhouse.UI.Model.ViewModel"
              xmlns:converter="clr-namespace:Flyhouse.Converters"
-             xmlns:view="clr-namespace:Flyhouse.UI.Model.View"
+             xmlns:view="clr-namespace:Flyhouse.UI.Model.View" 
              xmlns:global="clr-namespace:Flyhouse.Globals" x:Name="MainHomeView"
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase" xmlns:behaviors="clr-namespace:Flyhouse.Behaviors" Loaded="UserControl_Loaded"
              d:DesignHeight="950"
