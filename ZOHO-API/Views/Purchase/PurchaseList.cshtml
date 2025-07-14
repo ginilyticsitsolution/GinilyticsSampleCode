@@ -1,0 +1,106 @@
+﻿
+<body>
+    <div class="container-fluid mt-4">
+        <button id="exportBtn" class="btn btn-primary float-right mt-2 mb-5">Export to Excel</button>
+        <div class="table-responsive mx-auto">
+            <table class="table table-bordered table-striped" id="mytable">
+                <thead>
+                    <tr>
+                        <th>Purchase Order ID</th>
+                        <th>Vendor Name</th>
+                        <th>Purchase Order Number</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                       
+                    </tr>
+                </thead>
+                
+                <tbody id="PurchaseOrderGridBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <style>
+        #exportBtn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin-top: 5px;
+            margin-right: 84px;
+        }
+    </style>
+
+    <script>
+
+        $(document).ready(function () {
+
+            $.ajax({
+                url: '/Purchase/FetchPurchaseOrder',
+                type: 'GET',
+
+                success: function (data) {
+                    // Store the fetched data in the invoices variable
+                    var purchaseorders = data.purchaseorders;
+                    // Process the data and display it in a grid
+                    displayDataInGrid(purchaseorders);
+                },
+                error: function (error) {
+                    console.error('Error fetching data from Zoho Books API:', error);
+                }
+            });
+        });
+        function displayDataInGrid(purchaseorders) {
+            var gridBody = $('#PurchaseOrderGridBody');
+
+            // Clear previous rows
+            gridBody.empty();
+
+            // Iterate through invoices and create table rows
+            for (var i = 0; i < purchaseorders.length; i++) {
+                var rowHtml = '<tr data-purchase-id="' + purchaseorders[i].purchaseorder_id + '" onclick="openpurchaseOrderDetail(this)">' +
+                    '<td>' + purchaseorders[i].purchaseorder_id + '</td>' +
+                    '<td>' + purchaseorders[i].vendor_name + '</td>' +
+                    '<td>' + purchaseorders[i].purchaseorder_number + '</td>' +
+                    '<td>' + purchaseorders[i].status + '</td>' +
+                    '<td>' + purchaseorders[i].total + '</td>' +
+                    
+                    '</tr>';
+
+                // Append the row to the tbody
+                gridBody.append(rowHtml);
+            }
+            $('#mytable').DataTable();
+        }
+        function openpurchaseOrderDetail(row) {
+            // Retrieve the invoice ID from the clicked row using data-invoice-id attribute
+            var PurchaseOrderId = $(row).data('purchase-id');
+
+            // Redirect to the detail page with the project ID as a parameter
+            window.location.href = '/Purchase/GetPurchaseDetail?purchaseorderid=' + PurchaseOrderId;
+        }
+        // Add an event listener for the export button
+        $('#exportBtn').on('click', function () {
+            exportToExcel();
+        });
+
+        function exportToExcel() {
+            // Check if invoices data is available
+            if (!purchaseorders) {
+                console.error('No data available for export.');
+                return;
+            }
+
+            // Create a new Workbook
+            var wb = XLSX.utils.book_new();
+            var ws = XLSX.utils.json_to_sheet(purchaseorders);
+
+            // Add the worksheet to the Workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Purchaseorders');
+
+            // Save the Workbook as an Excel file
+            XLSX.writeFile(wb, 'Purchaseorders.xlsx');
+        }
+    </script>
+
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+
+</body>

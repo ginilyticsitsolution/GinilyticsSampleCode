@@ -1,0 +1,118 @@
+﻿
+<body>
+    <div class="container-fluid mt-4">
+        <button id="exportBtn" class="btn btn-primary float-right mt-2 mb-5">Export to Excel</button>
+        <div class="table-responsive mx-auto">
+            <table class="table table-bordered table-striped" id="mytable">
+                <thead>
+                    <tr>
+                        <th>Sales Order ID</th>
+                        <th>Customer Name</th>
+                        <th>Sales Order Number</th>
+                        <th>Status</th>
+                        <th>Order Status</th>
+                        <th>Invoiced Status</th>
+                        <th>Paid Status</th>
+                        <th>Sales Person Name</th>
+                        <th>Total</th>
+                        <th>Base Currency Total</th>
+                        <th>Total invoiced Amount</th>
+
+                    </tr>
+                </thead>
+
+                <tbody id="SalesOrderGridBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <style>
+        #exportBtn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin-top: 5px;
+            margin-right: 84px;
+        }
+    </style>
+
+    <script>
+
+        $(document).ready(function () {
+
+            $.ajax({
+                url: '/SalesOrder/FetchSalesOrder',
+                type: 'GET',
+
+                success: function (data) {
+                    // Store the fetched data in the invoices variable
+                    var salesorders = data.salesorders;
+                    // Process the data and display it in a grid
+                    displayDataInGrid(salesorders);
+                },
+                error: function (error) {
+                    console.error('Error fetching data from Zoho Books API:', error);
+                }
+            });
+        });
+        function displayDataInGrid(salesorders) {
+            var gridBody = $('#SalesOrderGridBody');
+
+            // Clear previous rows
+            gridBody.empty();
+
+            // Iterate through invoices and create table rows
+            for (var i = 0; i < salesorders.length; i++) {
+                var rowHtml = '<tr data-sales-id="' + salesorders[i].salesorder_id + '" onclick="opensalesOrderDetail(this)">' +
+                    '<td>' + salesorders[i].salesorder_id + '</td>' +
+                    '<td>' + salesorders[i].customer_name + '</td>' +
+                    '<td>' + salesorders[i].salesorder_number + '</td>' +
+                    '<td>' + salesorders[i].status + '</td>' +
+                    '<td>' + salesorders[i].order_status + '</td>' +
+                    '<td>' + salesorders[i].invoiced_status + '</td>' +
+                    '<td>' + salesorders[i].paid_status + '</td>' +
+                    '<td>' + salesorders[i].salesperson_name + '</td>' +
+                    '<td>' + salesorders[i].total + '</td>' +
+                    '<td>' + salesorders[i].bcy_total + '</td>' +
+                    '<td>' + salesorders[i].total_invoiced_amount + '</td>' +
+
+                    '</tr>';
+
+                // Append the row to the tbody
+                gridBody.append(rowHtml);
+            }
+            $('#mytable').DataTable();
+        }
+        function opensalesOrderDetail(row) {
+            // Retrieve the invoice ID from the clicked row using data-invoice-id attribute
+            var salesId = $(row).data('sales-id');
+
+            // Redirect to the detail page with the project ID as a parameter
+            window.location.href = '/SalesOrder/GetSalesDetail?salesorderid=' + salesId;
+        }
+        // Add an event listener for the export button
+        $('#exportBtn').on('click', function () {
+            exportToExcel();
+        });
+
+        function exportToExcel() {
+            // Check if invoices data is available
+            if (!salesorders) {
+                console.error('No data available for export.');
+                return;
+            }
+
+            // Create a new Workbook
+            var wb = XLSX.utils.book_new();
+            var ws = XLSX.utils.json_to_sheet(salesorders);
+
+            // Add the worksheet to the Workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'salesorders');
+
+            // Save the Workbook as an Excel file
+            XLSX.writeFile(wb, 'salesorders.xlsx');
+        }
+    </script>
+
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+
+</body>

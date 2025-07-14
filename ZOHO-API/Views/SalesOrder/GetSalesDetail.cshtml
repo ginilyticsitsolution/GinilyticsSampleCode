@@ -1,0 +1,226 @@
+﻿
+
+
+<body>
+    <link href="~/css/site.css" rel="stylesheet" />
+    <div class="container-fluid mt-4">
+        <div class="invoice-form">
+            <h2 class="invoice-heading">Sales Order Details</h2>
+
+            <div class="row px-5">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Sales Order Number:</label>
+                        <span id="SalesOrderNumber"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Customer Name:</label>
+                        <span id="CustomerName"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Status:</label>
+                        <span id="Status"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Order status:</label>
+                        <span id="orderstatus"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Adjustment:</label>
+                        <span id="Adjustment"></span>
+                    </div>
+                </div><div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Base Currency Adjustment:</label>
+                        <span id="bcyAdjustment"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Discount Amount:</label>
+                        <span id="discountamt"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Discount Percentage:</label>
+                        <span id="Discountper"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Discount Applied on Amount:</label>
+                        <span id="discountApplied"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Discount type:</label>
+                        <span id="DiscountType"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Sub Total:</label>
+                        <span id="subtotal"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Sub Total Inclusive of Tax:</label>
+                        <span id="subtotalInctnx"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Tax Total :</label>
+                        <span id="tnxtotal"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Total:</label>
+                        <span id="Total"></span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row px-5">
+                <div class="col-md-12">
+                    <h3 class="mt-5">Line Items</h3>
+                    <table class="table" id="mtable">
+                        <thead>
+                            <tr>
+                                <th>Item Id</th>
+                                <th>Name</th>
+                                <th>Sales Rate</th>
+                                <th>Base Currency Rate</th>
+                                <th>Rate</th>
+                                <th>Unit</th>
+                                <th>Quantity</th>
+                                <th>Discount</th>
+                                <th>Tax Name</th>
+                                <th>Tax Type</th>
+                                <th>Tax Percentage</th>
+                                <th>Item Total</th>
+                                <th>Item Type</th>
+                                <th>Project Id</th>
+
+                            </tr>
+                        </thead>
+                        <tbody id="lineItemsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var Salesorder;
+
+            // Assuming you have a function to initialize your DataTable
+            // initializeDataTable();
+
+            $.ajax({
+                url: '/SalesOrder/FetchSalesOrderDetail',
+                type: 'GET',
+                data: { salesorderid: '@ViewBag.SalesorderId' },
+                success: function (data) {
+                    Salesorder = data.salesorder;
+                    displayProjectDetails(Salesorder);
+                },
+                error: function (error) {
+                    console.error('Error fetching data from the API:', error);
+                }
+            });
+
+
+            function displayProjectDetails(Salesorder) {
+                document.getElementById('SalesOrderNumber').innerText = Salesorder.salesorder_number;
+                document.getElementById('CustomerName').innerText = Salesorder.customer_name;
+                document.getElementById('Status').innerText = Salesorder.status;
+                document.getElementById('orderstatus').innerText = Salesorder.order_status;
+                document.getElementById('Adjustment').innerText = Salesorder.adjustment;
+                document.getElementById('bcyAdjustment').innerText = Salesorder.bcy_adjustment;
+                document.getElementById('discountamt').innerText = Salesorder.discount;
+                document.getElementById('Discountper').innerText = Salesorder.discount_percent;
+                document.getElementById('discountApplied').innerText = Salesorder.discount_applied_on_amount;
+                document.getElementById('DiscountType').innerText = Salesorder.discount_type;
+                document.getElementById('subtotal').innerText = Salesorder.sub_total;
+                document.getElementById('subtotalInctnx').innerText = Salesorder.sub_total_inclusive_of_tax;
+                document.getElementById('tnxtotal').innerText = Salesorder.tax_total;
+                document.getElementById('Total').innerText = Salesorder.total;
+                displayLineItems(Salesorder.line_items);
+
+            }
+            $('#mytable').DataTable({
+                "ordering": false,
+               
+                "bLengthChange": false,
+                
+                
+                "bAutoWidth": false
+            });
+        });
+        function displayLineItems(lineItems) {
+            var tableBody = document.getElementById('lineItemsTableBody');
+
+            // Clear existing rows
+            tableBody.innerHTML = '';
+
+            // Populate the table with line item details
+            lineItems.forEach(function (item) {
+                var row = tableBody.insertRow();
+                var ItemCell = row.insertCell(0);
+                var NameCell = row.insertCell(1);
+                var SalesrateCell = row.insertCell(2);
+                var BcyrateCell = row.insertCell(3);
+                var RateCell = row.insertCell(4);
+                var UnitCell = row.insertCell(5);
+                var QuantityCell = row.insertCell(6);
+                var DiscountCell = row.insertCell(7);
+                var TaxnameCell = row.insertCell(8);
+                var TaxTypeCell = row.insertCell(9);
+                var TaxPercentCell = row.insertCell(10);
+                var ItemTotalCell = row.insertCell(11);
+                var ItemTypeCell = row.insertCell(12);
+                var ProjectCell = row.insertCell(13);
+
+
+                ItemCell.innerText = item.item_id;
+                NameCell.innerText = item.name;
+                SalesrateCell.innerText = item.sales_rate;
+                BcyrateCell.innerText = item.bcy_rate;
+                RateCell.innerText = item.rate;
+                UnitCell.innerText = item.unit;
+                QuantityCell.innerText = item.quantity;
+                DiscountCell.innerText = item.discount;
+                TaxnameCell.innerText = item.tax_name;
+                TaxTypeCell.innerText = item.tax_type;
+                TaxPercentCell.innerText = item.tax_percentage;
+                ItemTotalCell.innerText = item.item_total;
+                ItemTypeCell.innerText = item.item_type;
+                ProjectCell.innerText = item.project_id;
+
+            });
+        }
+
+    </script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+</body>
+
+
